@@ -33,19 +33,23 @@ function App() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === 'BUTTON') return;
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
       if (e.code === 'Space') {
         e.preventDefault();
-        toggleTimer();
+        setIsRunning(prev => !prev);
       } else if (e.key === 'r' || e.key === 'R') {
-        resetTimer();
+        setIsRunning(false);
+        setTimeLeft(mode === 'work' ? WORK_TIME : BREAK_TIME);
       } else if (e.key === 'm' || e.key === 'M') {
-        switchMode();
+        setIsRunning(false);
+        const newMode = mode === 'work' ? 'break' : 'work';
+        setMode(newMode);
+        setTimeLeft(newMode === 'work' ? WORK_TIME : BREAK_TIME);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [mode]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
