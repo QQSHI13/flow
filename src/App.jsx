@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
 
 const WORK_TIME = 25 * 60;
 const BREAK_TIME = 5 * 60;
@@ -33,7 +32,9 @@ function App() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+      // Only trigger if not typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
       if (e.code === 'Space') {
         e.preventDefault();
         setIsRunning(prev => !prev);
@@ -74,22 +75,24 @@ function App() {
   const circumference = 2 * Math.PI * 120;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
+  // Single blue background as requested
+  const backgroundStyle = {
+    width: '100vw',
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1e3a8a',
+    position: 'relative',
+    overflow: 'hidden',
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    margin: 0,
+    padding: 0
+  };
+
   return (
-    <div 
-      className="app-container"
-      style={{
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#1e3a8a',
-        position: 'relative',
-        overflow: 'hidden',
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-      }}
-    >
+    <div style={backgroundStyle}>
       {/* Header */}
       <div style={{
         position: 'absolute',
@@ -113,12 +116,12 @@ function App() {
           padding: '4px 16px',
           borderRadius: '9999px',
           display: 'inline-block',
-          backgroundColor: mode === 'work' ? 'rgba(59,130,246,0.3)' : 'rgba(16,185,129,0.3)'
+          backgroundColor: 'rgba(255,255,255,0.2)'
         }}>
           <span style={{
             fontSize: 'clamp(10px, 2.5vw, 14px)',
             fontWeight: 500,
-            color: 'rgba(255,255,255,0.8)',
+            color: 'rgba(255,255,255,0.9)',
             textTransform: 'uppercase',
             letterSpacing: '0.1em'
           }}>
@@ -174,23 +177,23 @@ function App() {
           {/* Timer Display */}
           <div style={{
             position: 'absolute',
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <div 
-              key={timeLeft}
-              style={{
-                fontSize: 'clamp(48px, 12vw, 72px)',
-                fontWeight: 300,
-                letterSpacing: '-0.02em',
-                color: 'white',
-                fontVariantNumeric: 'tabular-nums',
-                fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Consolas, monospace"
-              }}
-            >
+            <div style={{
+              fontSize: 'clamp(40px, 12vw, 64px)',
+              fontWeight: 300,
+              letterSpacing: '-0.02em',
+              color: 'white',
+              fontVariantNumeric: 'tabular-nums',
+              fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Consolas, monospace"
+            }}>
               {formatTime(timeLeft)}
             </div>
             <div style={{
@@ -208,7 +211,7 @@ function App() {
 
         {/* Controls */}
         <div style={{
-          marginTop: 'clamp(24px, 6vw, 40px)',
+          marginTop: 'clamp(20px, 5vw, 32px)',
           display: 'flex',
           alignItems: 'center',
           gap: 'clamp(8px, 2vw, 16px)'
@@ -217,9 +220,10 @@ function App() {
           <button
             onClick={resetTimer}
             tabIndex={0}
+            type="button"
             style={{
-              width: 'clamp(40px, 10vw, 48px)',
-              height: 'clamp(40px, 10vw, 48px)',
+              width: 'clamp(36px, 9vw, 44px)',
+              height: 'clamp(36px, 9vw, 44px)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -232,24 +236,24 @@ function App() {
               outline: 'none'
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.15)';
-              e.target.style.borderColor = 'rgba(255,255,255,0.4)';
-              e.target.style.color = 'white';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
+              e.currentTarget.style.color = 'white';
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.1)';
-              e.target.style.borderColor = 'rgba(255,255,255,0.2)';
-              e.target.style.color = 'rgba(255,255,255,0.7)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
             }}
             onFocus={(e) => {
-              e.target.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.5)';
+              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.5)';
             }}
             onBlur={(e) => {
-              e.target.style.boxShadow = 'none';
+              e.currentTarget.style.boxShadow = 'none';
             }}
             aria-label="Reset timer"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/>
               <path d="M3 3v9h9"/>
             </svg>
@@ -259,9 +263,10 @@ function App() {
           <button
             onClick={toggleTimer}
             tabIndex={0}
+            type="button"
             style={{
-              width: 'clamp(64px, 16vw, 80px)',
-              height: 'clamp(64px, 16vw, 80px)',
+              width: 'clamp(56px, 14vw, 72px)',
+              height: 'clamp(56px, 14vw, 72px)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -270,60 +275,52 @@ function App() {
               border: 'none',
               color: '#1f2937',
               cursor: 'pointer',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.5)',
               transition: 'all 200ms ease',
               outline: 'none'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.05)';
-              e.target.style.boxShadow = '0 30px 60px -12px rgba(0, 0, 0, 0.6)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 15px 50px -10px rgba(0, 0, 0, 0.6)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.5)';
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 40px -10px rgba(0, 0, 0, 0.5)';
             }}
             onMouseDown={(e) => {
-              e.target.style.transform = 'scale(0.95)';
+              e.currentTarget.style.transform = 'scale(0.95)';
             }}
             onMouseUp={(e) => {
-              e.target.style.transform = 'scale(1.05)';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onFocus={(e) => {
-              e.target.style.boxShadow = '0 0 0 4px rgba(255,255,255,0.4)';
+              e.currentTarget.style.boxShadow = '0 0 0 4px rgba(255,255,255,0.4)';
             }}
             onBlur={(e) => {
-              e.target.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.5)';
+              e.currentTarget.style.boxShadow = '0 10px 40px -10px rgba(0, 0, 0, 0.5)';
             }}
             aria-label={isRunning ? 'Pause timer' : 'Start timer'}
           >
-            <AnimatePresence mode="wait">
-              {isRunning ? (
-                <svg
-                  key="pause"
-                  width="28" height="28" viewBox="0 0 24 24" fill="currentColor"
-                >
-                  <rect x="6" y="4" width="4" height="16"/>
-                  <rect x="14" y="4" width="4" height="16"/>
-                </svg>
-              ) : (
-                <svg
-                  key="play"
-                  width="28" height="28" viewBox="0 0 24 24" fill="currentColor"
-                  style={{ marginLeft: '4px' }}
-                >
-                  <polygon points="5,3 19,12 5,21"/>
-                </svg>
-              )}
-            </AnimatePresence>
+            {isRunning ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '3px' }}>
+                <polygon points="5,3 19,12 5,21"/>
+              </svg>
+            )}
           </button>
 
           {/* Switch Mode Button */}
           <button
             onClick={switchMode}
             tabIndex={0}
+            type="button"
             style={{
-              width: 'clamp(40px, 10vw, 48px)',
-              height: 'clamp(40px, 10vw, 48px)',
+              width: 'clamp(36px, 9vw, 44px)',
+              height: 'clamp(36px, 9vw, 44px)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -336,24 +333,24 @@ function App() {
               outline: 'none'
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.15)';
-              e.target.style.borderColor = 'rgba(255,255,255,0.4)';
-              e.target.style.color = 'white';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
+              e.currentTarget.style.color = 'white';
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.1)';
-              e.target.style.borderColor = 'rgba(255,255,255,0.2)';
-              e.target.style.color = 'rgba(255,255,255,0.7)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
             }}
             onFocus={(e) => {
-              e.target.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.5)';
+              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.5)';
             }}
             onBlur={(e) => {
-              e.target.style.boxShadow = 'none';
+              e.currentTarget.style.boxShadow = 'none';
             }}
             aria-label="Switch mode"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
               <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
               <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
@@ -369,7 +366,7 @@ function App() {
           left: 0,
           right: 0,
           textAlign: 'center',
-          color: 'rgba(255,255,255,0.3)',
+          color: 'rgba(255,255,255,0.4)',
           fontSize: 'clamp(10px, 2.5vw, 12px)',
           letterSpacing: '0.05em',
           padding: '0 16px'
