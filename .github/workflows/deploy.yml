@@ -31,6 +31,8 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Copy time-flow.html
+        run: cp time-flow.html dist/time-flow.html
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
