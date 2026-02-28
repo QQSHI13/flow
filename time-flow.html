@@ -135,7 +135,7 @@
         // Keyboard
         document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Space'){e.preventDefault();if(V==='flow')toggle();}else if(e.key==='r'||e.key==='R'){reset();}else if(e.key==='m'||e.key==='M'){switchM();}});
         // Settings
-        $('settings-btn').addEventListener('click',()=>{const w=prompt('Work minutes:',W),b=prompt('Break minutes:',B);if(w&&!isNaN(w))cfg.work=parseInt(w);if(b&&!isNaN(b))cfg.break=parseInt(b);left=(mode==='work'?cfg.work:cfg.break)*60;updateTimer();});
+        $('settings-btn').addEventListener('click',()=>{const w=prompt('Work minutes:',W),b=prompt('Break minutes:',B);if(w&&!isNaN(w))W=parseInt(w);if(b&&!isNaN(b))B=parseInt(b);L=(M==='work'?W:B)*60;updT();});
         // Init
         updT();
         document.addEventListener('touchstart',()=>{},{passive:true});
