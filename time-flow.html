@@ -1,4 +1,71 @@
-<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Time & Flow</title><style>*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%;width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#111213;touch-action:manipulation}#app{position:relative;width:100%;height:100%;display:flex;flex-direction:column}#top{position:absolute;top:0;left:0;right:0;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100}.btn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all 200ms}.btn:active{transform:scale(0.95);background:rgba(255,255,255,0.15)}.tabs{display:flex;gap:8px}.tab{padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-size:13px;cursor:pointer;transition:all 200ms}.tab.active{background:rgba(59,130,246,0.5);border-color:rgba(59,130,246,0.5);color:#fff}#content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px 20px;position:relative}.view{display:none;width:100%;flex-direction:column;align-items:center;justify-content:center}.view.active{display:flex}#clock{padding:20px 30px;border:1px solid rgba(105,105,105,0.38);border-radius:50px;font-size:clamp(48px,15vw,120px);color:rgba(255,255,255,0.9);letter-spacing:2px;background:rgba(96,96,96,0.36);box-shadow:7px 7px 11px 0 rgba(0,0,0,0.46);text-shadow:5px 5px 11px rgba(0,0,0,0.64);font-family:Arial,Helvetica,sans-serif}#badge{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:0.1em;background:rgba(59,130,246,0.3);margin-bottom:20px}#ring{position:relative;width:220px;height:220px;margin-bottom:24px}#ring svg{width:100%;height:100%;transform:rotate(-90deg)}#text{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center}#time{font-size:52px;font-weight:300;color:#fff;font-family:ui-monospace,SFMono-Regular,monospace;letter-spacing:-0.02em}#status{margin-top:4px;font-size:11px;font-weight:500;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.15em}#controls{display:flex;align-items:center;gap:16px}.ctrl{display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;transition:all 200ms;-webkit-tap-highlight-color:transparent}.ctrl:active{transform:scale(0.95)}.ctrl.small{width:44px;height:44px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}.ctrl.small:active{background:rgba(255,255,255,0.15)}.ctrl.large{width:60px;height:60px;background:#fff;border:none;color:#1f2937;box-shadow:0 8px 24px -6px rgba(0,0,0,0.4)}.ctrl.large:active{transform:scale(0.95);box-shadow:0 4px 16px -4px rgba(0,0,0,0.3)}@media(max-width:480px){#top{height:56px;padding:0 12px}#content{padding:72px 16px 16px}#clock{padding:16px 24px;font-size:clamp(36px,12vw,64px);border-radius:30px}#ring{width:180px;height:180px;margin-bottom:20px}#time{font-size:42px}#controls{gap:12px}.ctrl.small{width:40px;height:40px}.ctrl.large{width:52px;height:52px}#badge{font-size:11px;padding:5px 12px;margin-bottom:16px}}@media(max-height:500px)and(max-width:900px){#content{padding-top:60px;flex-direction:row;justify-content:space-around}#ring{width:140px;height:140px;margin-bottom:12px}#time{font-size:32px}#clock{font-size:clamp(28px,8vw,48px)}}@media(pointer:coarse){.ctrl,.btn,.tab{touch-action:manipulation}}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Time & Flow</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; width: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #111213; touch-action: manipulation; }
+        #app { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
+        
+        /* Top Bar */
+        #top { position: absolute; top: 0; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; }
+        .btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 200ms; }
+        .btn:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
+        .tabs { display: flex; gap: 8px; }
+        .tab { padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer; transition: all 200ms; }
+        .tab.active { background: rgba(59,130,246,0.5); border-color: rgba(59,130,246,0.5); color: #fff; }
+        .tab:active { transform: scale(0.95); }
+        
+        /* Content */
+        #content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px 20px; position: relative; }
+        .view { display: none; width: 100%; flex-direction: column; align-items: center; justify-content: center; }
+        .view.active { display: flex; }
+        
+        /* Clock View */
+        #clock { padding: 20px 30px; border: 1px solid rgba(105,105,105,0.38); border-radius: 50px; font-size: clamp(48px, 15vw, 120px); color: rgba(255,255,255,0.9); letter-spacing: 2px; background: rgba(96,96,96,0.36); box-shadow: 7px 7px 11px 0 rgba(0,0,0,0.46); text-shadow: 5px 5px 11px rgba(0,0,0,0.64); font-family: Arial, Helvetica, sans-serif; }
+        
+        /* Flow View */
+        #badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.1em; background: rgba(59,130,246,0.3); margin-bottom: 20px; }
+        #ring { position: relative; width: 220px; height: 220px; margin-bottom: 24px; }
+        #ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        #timer-text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #timer-time { font-size: 52px; font-weight: 300; color: #fff; font-family: ui-monospace, SFMono-Regular, monospace; letter-spacing: -0.02em; }
+        #timer-status { margin-top: 4px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.15em; }
+        #controls { display: flex; align-items: center; gap: 16px; }
+        .ctrl { display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; transition: all 200ms; }
+        .ctrl:active { transform: scale(0.95); }
+        .ctrl.small { width: 44px; height: 44px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); }
+        .ctrl.small:active { background: rgba(255,255,255,0.15); }
+        .ctrl.large { width: 60px; height: 60px; background: #fff; border: none; color: #1f2937; box-shadow: 0 8px 24px -6px rgba(0,0,0,0.4); }
+        .ctrl.large:active { transform: scale(0.95); box-shadow: 0 4px 16px -4px rgba(0,0,0,0.3); }
+        
+        /* Mobile */
+        @media (max-width: 480px) {
+            #top { height: 56px; padding: 0 12px; }
+            .btn { width: 40px; height: 40px; font-size: 18px; }
+            .tab { padding: 6px 12px; font-size: 12px; }
+            #content { padding: 72px 16px 16px; }
+            #clock { padding: 16px 24px; font-size: clamp(36px, 12vw, 64px); border-radius: 30px; }
+            #ring { width: 180px; height: 180px; margin-bottom: 20px; }
+            #timer-time { font-size: 42px; }
+            #controls { gap: 12px; }
+            .ctrl.small { width: 40px; height: 40px; }
+            .ctrl.large { width: 52px; height: 52px; }
+            #badge { font-size: 11px; padding: 5px 12px; margin-bottom: 16px; }
+        }
+        
+        @media (max-height: 500px) and (max-width: 900px) {
+            #content { padding-top: 60px; flex-direction: row; justify-content: space-around; }
+            #ring { width: 140px; height: 140px; margin-bottom: 12px; }
+            #timer-time { font-size: 32px; }
+            #clock { font-size: clamp(28px, 8vw, 48px); }
+        }
+        
+        @media (pointer: coarse) {
+            .ctrl, .btn, .tab { touch-action: manipulation; }
+        }
     </style>
 </head>
 <body>
@@ -21,20 +88,20 @@
                         <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
                         <circle id="progress" cx="140" cy="140" r="120" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="754"/>
                     </svg>
-                    <div id="text">
-                        <div id="time">25:00</div>
-                        <div id="status">Paused</div>
+                    <div id="timer-text">
+                        <div id="timer-time">25:00</div>
+                        <div id="timer-status">Paused</div>
                     </div>
                 </div>
                 <div id="controls">
-                    <button class="ctrl small" id="reset" aria-label="Reset">
+                    <button class="ctrl small" id="reset-btn" aria-label="Reset">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/></svg>
                     </button>
-                    <button class="ctrl large" id="play" aria-label="Play">
+                    <button class="ctrl large" id="play-btn" aria-label="Play">
                         <svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
                         <svg id="icon-pause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                     </button>
-                    <button class="ctrl small" id="switch" aria-label="Switch Mode">
+                    <button class="ctrl small" id="mode-btn" aria-label="Switch Mode">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                     </button>
                 </div>
@@ -43,35 +110,35 @@
     </div>
     <script>
         // Config
-        const cfg={work:25,break:5,sound:true};
+        const W=25,B=5;
         // State
-        let view='flow',mode='work',left=cfg.work*60,run=false,timer=null,actx=null;
-        // Elements
+        let V='flow',M='work',L=W*60,R=false,T=null,A=null;
+        // DOM
         const $=id=>document.getElementById(id);
-        const clock=$('clock'),badge=$('badge'),time=$('time'),status=$('status'),prog=$('progress'),play=$('icon-play'),pause=$('icon-pause');
+        const C=$('clock'),D=$('badge'),E=$('timer-time'),S=$('timer-status'),P=$('progress'),I=$('icon-play'),U=$('icon-pause');
         // Audio
-        const initAudio=()=>{if(!actx)actx=new(window.AudioContext||webkitAudioContext)();};
-        const beep=()=>{if(!cfg.sound||!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.setValueAtTime(880,actx.currentTime);g.gain.setValueAtTime(0.1,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,actx.currentTime+0.1);o.start();o.stop(actx.currentTime+0.1);};
+        const initA=()=>{if(!A)A=new(window.AudioContext||webkitAudioContext)();};
+        const beep=()=>{if(!A)return;const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);o.frequency.setValueAtTime(880,A.currentTime);g.gain.setValueAtTime(0.1,A.currentTime);g.gain.exponentialRampToValueAtTime(0.01,A.currentTime+0.1);o.start();o.stop(A.currentTime+0.1);};
         // Clock
-        const updClock=()=>{const n=new Date(),h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');clock.textContent=`${h}:${m}:${s}`;};
-        setInterval(updClock,1000);updClock();
+        const updC=()=>{const n=new Date(),h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');C.textContent=`${h}:${m}:${s}`;};
+        setInterval(updC,1000);updC();
         // View
-        const switchView=v=>{view=v;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));$(v+'-view').classList.add('active');$(v==='clock'?'flow':'clock')+'-view').classList.remove('active');};
-        document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
+        const switchV=v=>{V=v;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));$('clock-view').classList.toggle('active',v==='clock');$('flow-view').classList.toggle('active',v==='flow');};
+        document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchV(t.dataset.view)));
         // Timer
         const fmt=s=>{const m=Math.floor(s/60);return`${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;};
-        const updTimer=()=>{const total=(mode==='work'?cfg.work:cfg.break)*60,p=((total-left)/total)*100,c=2*Math.PI*120,o=c-(p/100)*c;time.textContent=fmt(left);status.textContent=run?(mode==='work'?'Focusing...':'Recharging...'):'Paused';badge.textContent=mode==='work'?'Deep Work':'Rest & Recover';prog.style.strokeDashoffset=o;play.style.display=run?'none':'block';pause.style.display=run?'block':'none';};
-        const toggle=()=>{initAudio();if(run){clearInterval(timer);run=false;}else{run=true;timer=setInterval(()=>{if(left<=1){clearInterval(timer);run=false;beep();mode=mode==='work'?'break':'work';left=(mode==='work'?cfg.work:cfg.break)*60;}else{left--;}updTimer();},1000);}updTimer();};
-        const reset=()=>{initAudio();clearInterval(timer);run=false;left=(mode==='work'?cfg.work:cfg.break)*60;updTimer();};
-        const switchMode=()=>{initAudio();clearInterval(timer);run=false;mode=mode==='work'?'break':'work';left=(mode==='work'?cfg.work:cfg.break)*60;updTimer();};
-        $('play').addEventListener('click',toggle);$('reset').addEventListener('click',reset);$('switch').addEventListener('click',switchMode);
+        const updT=()=>{const tot=(M==='work'?W:B)*60,prog=((tot-L)/tot)*100,circ=2*Math.PI*120,off=circ-(prog/100)*circ;E.textContent=fmt(L);S.textContent=R?(M==='work'?'Focusing...':'Recharging...'):'Paused';D.textContent=M==='work'?'Deep Work':'Rest & Recover';P.style.strokeDashoffset=off;I.style.display=R?'none':'block';U.style.display=R?'block':'none';};
+        const toggle=()=>{initA();if(R){clearInterval(T);R=false;}else{R=true;T=setInterval(()=>{if(L<=1){clearInterval(T);R=false;beep();M=M==='work'?'break':'work';L=(M==='work'?W:B)*60;}else{L--;}updT();},1000);}updT();};
+        const reset=()=>{initA();clearInterval(T);R=false;L=(M==='work'?W:B)*60;updT();};
+        const switchM=()=>{initA();clearInterval(T);R=false;M=M==='work'?'break':'work';L=(M==='work'?W:B)*60;updT();};
+        $('play-btn').addEventListener('click',toggle);$('reset-btn').addEventListener('click',reset);$('mode-btn').addEventListener('click',switchM);
         // Keyboard
-        document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Space'){e.preventDefault();if(view==='flow')toggle();}else if(e.key==='r'||e.key==='R'){reset();}else if(e.key==='m'||e.key==='M'){switchMode();}});
+        document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Space'){e.preventDefault();if(V==='flow')toggle();}else if(e.key==='r'||e.key==='R'){reset();}else if(e.key==='m'||e.key==='M'){switchM();}});
+        // Settings
+        $('settings-btn').addEventListener('click',()=>{const w=prompt('Work minutes:',W),b=prompt('Break minutes:',B);if(w&&!isNaN(w))cfg.work=parseInt(w);if(b&&!isNaN(b))cfg.break=parseInt(b);left=(mode==='work'?cfg.work:cfg.break)*60;updateTimer();});
         // Init
-        updTimer();
-        // Settings panel (simplified inline)
-        const settingsBtn=$('settings-btn')||document.createElement('button');
-        if(!settingsBtn.id){settingsBtn.id='settings-btn';settingsBtn.className='btn';settingsBtn.innerHTML='&#9881;';settingsBtn.style.cssText='position:fixed;top:20px;left:20px;z-index:1000;';document.body.appendChild(settingsBtn);}
-        settingsBtn.onclick=()=>{const d=prompt('Work minutes:',cfg.work),b=prompt('Break minutes:',cfg.break);if(d)cfg.work=parseInt(d)||25;if(b)cfg.break=parseInt(b)||5;left=(mode==='work'?cfg.work:cfg.break)*60;updTimer();};
+        updT();
+        document.addEventListener('touchstart',()=>{},{passive:true});
     </script>
-</body></html>
+</body>
+</html>
