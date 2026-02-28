@@ -82,6 +82,45 @@
             #clock { font-size: clamp(28px, 8vw, 48px); }
         }
         
+        /* Desktop Horizontal Layout */
+        @media (min-width: 1024px) {
+            #content {
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                padding: 80px 40px 40px;
+                gap: 40px;
+            }
+            
+            #clock-view, #flow-view {
+                flex: 1;
+                max-width: 500px;
+            }
+            
+            #clock {
+                font-size: clamp(48px, 8vw, 100px);
+            }
+            
+            #ring {
+                width: 280px;
+                height: 280px;
+            }
+            
+            #timer-time {
+                font-size: 64px;
+            }
+            
+            .ctrl.small {
+                width: 52px;
+                height: 52px;
+            }
+            
+            .ctrl.large {
+                width: 72px;
+                height: 72px;
+            }
+        }
+        
         @media (pointer: coarse) {
             .ctrl, .btn, .tab, .setting-input, #settings-save, #settings-close { touch-action: manipulation; }
         }
@@ -226,7 +265,7 @@
                     reset();
                     rState = 1;
                 } else {
-                    switchM();
+                    switchM(); // Switch timer mode (work/break)
                     rState = 0;
                 }
                 return;
@@ -234,7 +273,7 @@
             
             // M = toggle between clock and flow views
             if (e.key === 'm' || e.key === 'M') {
-                switchV(V === 'clock' ? 'flow' : 'clock');
+                switchV(V === 'clock' ? 'flow' : 'clock'); // Switch view
                 return;
             }
         });
