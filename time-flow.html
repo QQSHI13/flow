@@ -250,12 +250,19 @@
         // M = toggle between clock view ↔ flow timer view
         let rState = 0; // 0 = reset, 1 = switch mode
         document.addEventListener('keydown', e => {
-            if (e.target.tagName === 'INPUT') return;
+            // Don't trigger when typing in inputs
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            // Debug: log keypresses (remove in production)
+            // console.log('Key pressed:', e.key, 'Code:', e.code, 'View:', V);
             
             // Space = Play/Pause (only in Flow view)
-            if (e.code === 'Space') {
+            // Support both e.code and e.key for different browsers
+            if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault();
-                if (V === 'flow') toggle();
+                if (V === 'flow') {
+                    toggle();
+                }
                 return;
             }
             
