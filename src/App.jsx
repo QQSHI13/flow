@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const WORK_TIME = 25 * 60;
@@ -8,10 +8,10 @@ function App() {
   const [mode, setMode] = useState('work');
   const [timeLeft, setTimeLeft] = useState(WORK_TIME);
   const [isRunning, setIsRunning] = useState(false);
-  const [progress, setProgress] = useState(0);
   const intervalRef = useRef(null);
 
   const totalTime = mode === 'work' ? WORK_TIME : BREAK_TIME;
+  const progress = ((totalTime - timeLeft) / totalTime) * 100;
 
   useEffect(() => {
     if (isRunning) {
@@ -30,9 +30,22 @@ function App() {
     return () => clearInterval(intervalRef.current);
   }, [isRunning, mode]);
 
+  // Keyboard shortcuts
   useEffect(() => {
-    setProgress(((totalTime - timeLeft) / totalTime) * 100);
-  }, [timeLeft, totalTime]);
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        toggleTimer();
+      } else if (e.key === 'r' || e.key === 'R') {
+        resetTimer();
+      } else if (e.key === 'm' || e.key === 'M') {
+        switchMode();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -40,90 +53,84 @@ function App() {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const toggleTimer = () => setIsRunning(!isRunning);
+  const toggleTimer = useCallback(() => setIsRunning(prev => !prev), []);
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     setIsRunning(false);
     setTimeLeft(mode === 'work' ? WORK_TIME : BREAK_TIME);
-  };
+  }, [mode]);
 
-  const switchMode = () => {
+  const switchMode = useCallback(() => {
     setIsRunning(false);
     const newMode = mode === 'work' ? 'break' : 'work';
     setMode(newMode);
     setTimeLeft(newMode === 'work' ? WORK_TIME : BREAK_TIME);
-  };
+  }, [mode]);
 
   const circumference = 2 * Math.PI * 120;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
+  const bgGradient = mode === 'work' 
+    ? 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 30%, #3b82f6 60%, #1e40af 100%)'
+    : 'linear-gradient(135deg, #064e3b 0%, #065f46 30%, #10b981 60%, #047857 100%)';
+
   return (
-    <motion.div
-      className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden"
-      animate={{
-        background: mode === 'work' 
-          ? 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%)'
-          : 'linear-gradient(135deg, #065f46 0%, #10b981 50%, #047857 100%)'
+    <div 
+      className="fixed inset-0 w-full h-full flex flex-col items-center justify-center overflow-hidden"
+      style={{ 
+        background: bgGradient,
+        transition: 'background 800ms cubic-bezier(0.4, 0, 0.2, 1)'
       }}
-      transition={{ duration: 0.8, ease: "easeInOut" }}
     >
-      {/* Ambient particles */}
+      {/* Ambient floating orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
+        {[...Array(4)].map((_, i) => (
+          <div
             key={i}
-            className="absolute w-64 h-64 rounded-full opacity-10"
+            className="absolute rounded-full"
             style={{
-              background: mode === 'work' 
-                ? 'radial-gradient(circle, rgba(147,197,253,0.4) 0%, transparent 70%)'
-                : 'radial-gradient(circle, rgba(167,243,208,0.4) 0%, transparent 70%)',
-              left: `${15 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
-            }}
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.1, 0.15, 0.1],
-            }}
-            transition={{
-              duration: 8 + i * 2,
-              repeat: Infinity,
-              ease: "easeInOut",
+              width: `${300 + i * 100}px`,
+              height: `${300 + i * 100}px`,
+              left: `${10 + i * 20}%`,
+              top: `${10 + (i % 2) * 30}%`,
+              background: mode === 'work'
+                ? 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 60%)'
+                : 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 60%)',
+              transition: 'background 800ms ease, transform 3s ease-in-out',
+              animation: `float ${8 + i * 2}s ease-in-out infinite`,
             }}
           />
         ))}
       </div>
 
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+      `}</style>
+
       {/* Header */}
-      <motion.div 
-        className="absolute top-8 left-0 right-0 text-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h1 className="text-3xl font-light tracking-[0.3em] text-white/90 uppercase">
+      <div className="absolute top-6 sm:top-8 left-0 right-0 text-center px-4">
+        <h1 className="text-2xl sm:text-3xl font-light tracking-[0.3em] text-white/90 uppercase">
           Flow
         </h1>
-        <motion.div 
-          className="mt-2 px-4 py-1 rounded-full inline-block backdrop-blur-sm"
-          animate={{
-            backgroundColor: mode === 'work' ? 'rgba(59,130,246,0.3)' : 'rgba(16,185,129,0.3)',
+        <div 
+          className="mt-2 px-4 py-1 rounded-full inline-block backdrop-blur-sm transition-colors duration-500"
+          style={{
+            backgroundColor: mode === 'work' ? 'rgba(59,130,246,0.3)' : 'rgba(16,185,129,0.3)'
           }}
         >
-          <span className="text-sm font-medium text-white/80 uppercase tracking-wider">
+          <span className="text-xs sm:text-sm font-medium text-white/80 uppercase tracking-wider">
             {mode === 'work' ? 'Deep Work' : 'Rest & Recover'}
           </span>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Timer Container */}
-      <motion.div 
-        className="relative flex flex-col items-center justify-center"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
-      >
+      <div className="relative flex flex-col items-center justify-center px-4">
         {/* Progress Ring SVG */}
-        <div className="relative">
+        <div className="relative" style={{ width: '280px', height: '280px' }}>
           <svg width="280" height="280" className="transform -rotate-90">
             {/* Background ring */}
             <circle
@@ -135,7 +142,7 @@ function App() {
               strokeWidth="4"
             />
             {/* Progress ring */}
-            <motion.circle
+            <circle
               cx="140"
               cy="140"
               r="120"
@@ -144,58 +151,50 @@ function App() {
               strokeWidth="4"
               strokeLinecap="round"
               strokeDasharray={circumference}
-              animate={{ strokeDashoffset }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
+              strokeDashoffset={strokeDashoffset}
+              style={{ transition: 'stroke-dashoffset 500ms ease-out' }}
             />
           </svg>
 
           {/* Timer Display */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <motion.div 
-              className="text-7xl font-light tracking-tight text-white tabular-nums"
+            <div 
+              className="text-6xl sm:text-7xl font-light tracking-tight text-white tabular-nums transition-transform duration-150"
               key={timeLeft}
-              initial={{ scale: 1.02, opacity: 0.8 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.15 }}
+              style={{ fontVariantNumeric: 'tabular-nums' }}
             >
               {formatTime(timeLeft)}
-            </motion.div>
-            <motion.div 
-              className="mt-2 text-sm font-medium text-white/50 uppercase tracking-[0.2em]"
-              animate={{ opacity: isRunning ? [0.5, 1, 0.5] : 0.5 }}
-              transition={{ duration: 2, repeat: isRunning ? Infinity : 0 }}
+            </div>
+            <div 
+              className="mt-2 text-xs sm:text-sm font-medium text-white/50 uppercase tracking-[0.2em] transition-opacity duration-300"
+              style={{ opacity: isRunning ? 1 : 0.5 }}
             >
               {isRunning ? (mode === 'work' ? 'Focusing...' : 'Recharging...') : 'Paused'}
-            </motion.div>
+            </div>
           </div>
         </div>
 
         {/* Controls */}
-        <motion.div 
-          className="mt-10 flex items-center gap-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
+        <div className="mt-8 sm:mt-10 flex items-center gap-3 sm:gap-4">
           {/* Reset Button */}
-          <motion.button
+          <button
             onClick={resetTimer}
-            className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 text-white/70 hover:text-white hover:border-white/40 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            tabIndex={0}
+            className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 text-white/70 hover:text-white hover:border-white/40 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200"
+            aria-label="Reset timer"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/>
               <path d="M3 3v9h9"/>
             </svg>
-          </motion.button>
+          </button>
 
           {/* Play/Pause Button */}
-          <motion.button
+          <button
             onClick={toggleTimer}
-            className="w-20 h-20 rounded-full flex items-center justify-center bg-white text-gray-900 shadow-2xl shadow-black/30"
-            whileHover={{ scale: 1.05, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)" }}
-            whileTap={{ scale: 0.95 }}
+            tabIndex={0}
+            className="w-20 h-20 rounded-full flex items-center justify-center bg-white text-gray-900 shadow-2xl shadow-black/30 hover:shadow-black/50 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-white/50 focus:ring-offset-4 focus:ring-offset-transparent transition-all duration-200"
+            aria-label={isRunning ? 'Pause timer' : 'Start timer'}
           >
             <AnimatePresence mode="wait">
               {isRunning ? (
@@ -224,14 +223,14 @@ function App() {
                 </motion.svg>
               )}
             </AnimatePresence>
-          </motion.button>
+          </button>
 
           {/* Switch Mode Button */}
-          <motion.button
+          <button
             onClick={switchMode}
-            className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 text-white/70 hover:text-white hover:border-white/40 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            tabIndex={0}
+            className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 text-white/70 hover:text-white hover:border-white/40 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200"
+            aria-label="Switch mode"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
@@ -239,20 +238,15 @@ function App() {
               <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
               <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
             </svg>
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
 
         {/* Keyboard Shortcuts Hint */}
-        <motion.div 
-          className="absolute bottom-8 text-white/30 text-xs tracking-wider"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-        >
+        <div className="absolute bottom-4 sm:bottom-8 text-white/30 text-xs tracking-wider text-center px-4">
           SPACE to start • R to reset • M to switch mode
-        </motion.div>
-      </motion.div>
-    </motion.div>
+        </div>
+      </div>
+    </div>
   );
 }
 
