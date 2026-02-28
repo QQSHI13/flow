@@ -206,9 +206,33 @@
             if(e.target===settingsModal)settingsModal.style.display='none';
         });
         
+        // Keyboard Shortcuts
+        // R = cycles: reset timer → switch work/break mode
+        // M = toggle between clock view ↔ flow timer view
+        let rState = 0; // 0 = reset, 1 = switch mode
+        document.addEventListener('keydown', e => {
+            if (e.target.tagName === 'INPUT') return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (V === 'flow') toggle();
+            } else if (e.key === 'r' || e.key === 'R') {
+                // R cycles: reset → switch mode
+                if (rState === 0) {
+                    reset();
+                    rState = 1;
+                } else {
+                    switchM();
+                    rState = 0;
+                }
+            } else if (e.key === 'm' || e.key === 'M') {
+                // M toggles between clock and flow views
+                switchV(V === 'clock' ? 'flow' : 'clock');
+            }
+        });
+        
         // Init
         updT();
-        document.addEventListener('touchstart',()=>{},{passive:true});
+        document.addEventListener('touchstart', () => {}, { passive: true });
     </script>
 </body>
 </html>
