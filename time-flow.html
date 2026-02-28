@@ -237,6 +237,7 @@
             W=newWork;
             B=newBreak;
             L=(M==='work'?W:B)*60;
+            saveSettings(); // Save to cookies
             updT();
             settingsModal.style.display='none';
         });
@@ -245,42 +246,61 @@
             if(e.target===settingsModal)settingsModal.style.display='none';
         });
         
+        // Cookie helpers
+        const setCookie = (name, value, days=365) => {
+            const expires = new Date(Date.now() + days * 86400000).toUTCString();
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires};path=/`;
+        };
+        const getCookie = (name) => {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? decodeURIComponent(match[2]) : null;
+        };
+        
+        // Load settings from cookies
+        const loadSettings = () => {
+            const savedWork = getCookie('flow_work');
+            const savedBreak = getCookie('flow_break');
+            if (savedWork) W = parseInt(savedWork) || 25;
+            if (savedBreak) B = parseInt(savedBreak) || 5;
+            L = (M === 'work' ? W : B) * 60;
+        };
+        
+        // Save settings to cookies
+        const saveSettings = () => {
+            setCookie('flow_work', W);
+            setCookie('flow_break', B);
+        };
+        
+        // Load settings on init
+        loadSettings();
+        
         // Keyboard Shortcuts
-        // R = cycles: reset timer → switch work/break mode
+        // R = if timing: reset; if paused: switch timing mode
         // M = toggle between clock view ↔ flow timer view
-        let rState = 0; // 0 = reset, 1 = switch mode
         document.addEventListener('keydown', e => {
             // Don't trigger when typing in inputs
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             
-            // Debug: log keypresses (remove in production)
-            // console.log('Key pressed:', e.key, 'Code:', e.code, 'View:', V);
-            
             // Space = Play/Pause (only in Flow view)
-            // Support both e.code and e.key for different browsers
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault();
-                if (V === 'flow') {
-                    toggle();
-                }
+                if (V === 'flow') toggle();
                 return;
             }
             
-            // R = cycles: reset → switch mode
+            // R = if running: reset; if paused: switch mode
             if (e.key === 'r' || e.key === 'R') {
-                if (rState === 0) {
-                    reset();
-                    rState = 1;
+                if (R) {
+                    reset();  // Timer running → reset
                 } else {
-                    switchM(); // Switch timer mode (work/break)
-                    rState = 0;
+                    switchM();  // Timer paused → switch work/break mode
                 }
                 return;
             }
             
             // M = toggle between clock and flow views
             if (e.key === 'm' || e.key === 'M') {
-                switchV(V === 'clock' ? 'flow' : 'clock'); // Switch view
+                switchV(V === 'clock' ? 'flow' : 'clock');
                 return;
             }
         });
