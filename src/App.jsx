@@ -7,7 +7,18 @@ function App() {
   const [mode, setMode] = useState('work');
   const [timeLeft, setTimeLeft] = useState(WORK_TIME);
   const [isRunning, setIsRunning] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const intervalRef = useRef(null);
+
+  // Detect mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const totalTime = mode === 'work' ? WORK_TIME : BREAK_TIME;
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
@@ -29,10 +40,11 @@ function App() {
     return () => clearInterval(intervalRef.current);
   }, [isRunning, mode]);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts - desktop only
   useEffect(() => {
+    if (isMobile) return;
+    
     const handleKeyDown = (e) => {
-      // Only trigger if not typing in an input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       
       if (e.code === 'Space') {
@@ -50,7 +62,7 @@ function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mode]);
+  }, [isMobile, mode]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -75,34 +87,51 @@ function App() {
   const circumference = 2 * Math.PI * 120;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
-  // Single blue background as requested
-  const backgroundStyle = {
-    width: '100vw',
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1e3a8a',
-    position: 'relative',
-    overflow: 'hidden',
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    margin: 0,
-    padding: 0
+  // Mobile-optimized styles
+  const mobileStyles = isMobile ? {
+    timerSize: 'clamp(180px, 70vw, 260px)',
+    timeFontSize: 'clamp(48px, 16vw, 72px)',
+    buttonSize: 'clamp(52px, 16vw, 64px)',
+    smallButtonSize: 'clamp(40px, 12vw, 48px)',
+    headerTop: '16px',
+    controlsGap: '12px',
+    hintBottom: '12px'
+  } : {
+    timerSize: 'clamp(240px, 30vw, 320px)',
+    timeFontSize: 'clamp(56px, 6vw, 80px)',
+    buttonSize: 'clamp(64px, 5vw, 72px)',
+    smallButtonSize: 'clamp(44px, 4vw, 52px)',
+    headerTop: '32px',
+    controlsGap: '16px',
+    hintBottom: '24px'
   };
 
   return (
-    <div style={backgroundStyle}>
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#1e3a8a',
+      position: 'relative',
+      overflow: 'hidden',
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      margin: 0,
+      padding: 0
+    }}>
       {/* Header */}
       <div style={{
         position: 'absolute',
-        top: '24px',
+        top: mobileStyles.headerTop,
         left: 0,
         right: 0,
-        textAlign: 'center'
+        textAlign: 'center',
+        padding: '0 16px'
       }}>
         <h1 style={{
-          fontSize: 'clamp(20px, 5vw, 32px)',
+          fontSize: isMobile ? '24px' : 'clamp(24px, 3vw, 36px)',
           fontWeight: 300,
           letterSpacing: '0.3em',
           color: 'rgba(255,255,255,0.9)',
@@ -112,14 +141,14 @@ function App() {
           Flow
         </h1>
         <div style={{
-          marginTop: '8px',
-          padding: '4px 16px',
+          marginTop: '6px',
+          padding: '4px 12px',
           borderRadius: '9999px',
           display: 'inline-block',
-          backgroundColor: 'rgba(255,255,255,0.2)'
+          backgroundColor: 'rgba(255,255,255,0.15)'
         }}>
           <span style={{
-            fontSize: 'clamp(10px, 2.5vw, 14px)',
+            fontSize: isMobile ? '11px' : 'clamp(11px, 1.2vw, 13px)',
             fontWeight: 500,
             color: 'rgba(255,255,255,0.9)',
             textTransform: 'uppercase',
@@ -136,13 +165,14 @@ function App() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '0 20px'
+        padding: '0 20px',
+        marginTop: isMobile ? '40px' : '0'
       }}>
         {/* Progress Ring */}
         <div style={{
           position: 'relative',
-          width: 'clamp(200px, 60vw, 280px)',
-          height: 'clamp(200px, 60vw, 280px)'
+          width: mobileStyles.timerSize,
+          height: mobileStyles.timerSize
         }}>
           <svg 
             width="100%" 
@@ -150,7 +180,6 @@ function App() {
             viewBox="0 0 280 280"
             style={{ transform: 'rotate(-90deg)' }}
           >
-            {/* Background ring */}
             <circle
               cx="140"
               cy="140"
@@ -159,7 +188,6 @@ function App() {
               stroke="rgba(255,255,255,0.1)"
               strokeWidth="4"
             />
-            {/* Progress ring */}
             <circle
               cx="140"
               cy="140"
@@ -187,7 +215,7 @@ function App() {
             justifyContent: 'center'
           }}>
             <div style={{
-              fontSize: 'clamp(40px, 12vw, 64px)',
+              fontSize: mobileStyles.timeFontSize,
               fontWeight: 300,
               letterSpacing: '-0.02em',
               color: 'white',
@@ -197,12 +225,12 @@ function App() {
               {formatTime(timeLeft)}
             </div>
             <div style={{
-              marginTop: '8px',
-              fontSize: 'clamp(10px, 2.5vw, 12px)',
+              marginTop: '6px',
+              fontSize: isMobile ? '11px' : 'clamp(11px, 1.2vw, 13px)',
               fontWeight: 500,
               color: 'rgba(255,255,255,0.5)',
               textTransform: 'uppercase',
-              letterSpacing: '0.2em'
+              letterSpacing: '0.15em'
             }}>
               {isRunning ? (mode === 'work' ? 'Focusing...' : 'Recharging...') : 'Paused'}
             </div>
@@ -211,10 +239,10 @@ function App() {
 
         {/* Controls */}
         <div style={{
-          marginTop: 'clamp(20px, 5vw, 32px)',
+          marginTop: isMobile ? '24px' : '32px',
           display: 'flex',
           alignItems: 'center',
-          gap: 'clamp(8px, 2vw, 16px)'
+          gap: mobileStyles.controlsGap
         }}>
           {/* Reset Button */}
           <button
@@ -222,8 +250,8 @@ function App() {
             tabIndex={0}
             type="button"
             style={{
-              width: 'clamp(36px, 9vw, 44px)',
-              height: 'clamp(36px, 9vw, 44px)',
+              width: mobileStyles.smallButtonSize,
+              height: mobileStyles.smallButtonSize,
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -265,8 +293,8 @@ function App() {
             tabIndex={0}
             type="button"
             style={{
-              width: 'clamp(56px, 14vw, 72px)',
-              height: 'clamp(56px, 14vw, 72px)',
+              width: mobileStyles.buttonSize,
+              height: mobileStyles.buttonSize,
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -275,17 +303,17 @@ function App() {
               border: 'none',
               color: '#1f2937',
               cursor: 'pointer',
-              boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.5)',
+              boxShadow: '0 8px 32px -8px rgba(0, 0, 0, 0.4)',
               transition: 'all 200ms ease',
               outline: 'none'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 15px 50px -10px rgba(0, 0, 0, 0.6)';
+              e.currentTarget.style.boxShadow = '0 12px 40px -8px rgba(0, 0, 0, 0.5)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 10px 40px -10px rgba(0, 0, 0, 0.5)';
+              e.currentTarget.style.boxShadow = '0 8px 32px -8px rgba(0, 0, 0, 0.4)';
             }}
             onMouseDown={(e) => {
               e.currentTarget.style.transform = 'scale(0.95)';
@@ -297,7 +325,7 @@ function App() {
               e.currentTarget.style.boxShadow = '0 0 0 4px rgba(255,255,255,0.4)';
             }}
             onBlur={(e) => {
-              e.currentTarget.style.boxShadow = '0 10px 40px -10px rgba(0, 0, 0, 0.5)';
+              e.currentTarget.style.boxShadow = '0 8px 32px -8px rgba(0, 0, 0, 0.4)';
             }}
             aria-label={isRunning ? 'Pause timer' : 'Start timer'}
           >
@@ -319,8 +347,8 @@ function App() {
             tabIndex={0}
             type="button"
             style={{
-              width: 'clamp(36px, 9vw, 44px)',
-              height: 'clamp(36px, 9vw, 44px)',
+              width: mobileStyles.smallButtonSize,
+              height: mobileStyles.smallButtonSize,
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -359,20 +387,21 @@ function App() {
           </button>
         </div>
 
-        {/* Keyboard Shortcuts Hint */}
-        <div style={{
-          position: 'absolute',
-          bottom: '16px',
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          color: 'rgba(255,255,255,0.4)',
-          fontSize: 'clamp(10px, 2.5vw, 12px)',
-          letterSpacing: '0.05em',
-          padding: '0 16px'
-        }}>
-          SPACE to start • R to reset • M to switch mode
-        </div>
+        {/* Keyboard Shortcuts Hint - Desktop only */}
+        {!isMobile && (
+          <div style={{
+            position: 'absolute',
+            bottom: '24px',
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+            color: 'rgba(255,255,255,0.4)',
+            fontSize: '12px',
+            letterSpacing: '0.05em'
+          }}>
+            SPACE to start • R to reset • M to switch mode
+          </div>
+        )}
       </div>
     </div>
   );

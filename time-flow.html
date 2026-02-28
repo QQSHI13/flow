@@ -354,17 +354,45 @@
         document.getElementById('play-btn').addEventListener('click', toggleTimer);
         document.getElementById('mode-btn').addEventListener('click', switchMode);
         
+        // R key cycles through: reset timer -> switch mode -> reset timer...
+        let rKeyState = 0; // 0 = reset, 1 = switch mode
+        
+        // M key toggles between showing clock and showing flow timer
+        let showFlow = true; // Start with flow timer visible
+        
+        function updateVisibility() {
+            const digitalTime = document.getElementById('digital-time');
+            const flowContainer = document.getElementById('flow-container');
+            
+            if (showFlow) {
+                digitalTime.style.display = 'none';
+                flowContainer.style.display = 'flex';
+            } else {
+                digitalTime.style.display = 'block';
+                flowContainer.style.display = 'none';
+            }
+        }
+        
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             
             if (e.code === 'Space') {
                 e.preventDefault();
-                toggleTimer();
+                if (showFlow) toggleTimer();
             } else if (e.key === 'r' || e.key === 'R') {
-                resetTimer();
+                // R cycles: reset -> switch mode -> reset...
+                if (rKeyState === 0) {
+                    resetTimer();
+                    rKeyState = 1;
+                } else {
+                    switchMode();
+                    rKeyState = 0;
+                }
             } else if (e.key === 'm' || e.key === 'M') {
-                switchMode();
+                // M toggles between clock and flow timer
+                showFlow = !showFlow;
+                updateVisibility();
             }
         });
         
