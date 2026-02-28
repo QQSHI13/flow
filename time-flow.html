@@ -1,301 +1,77 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Time & Flow</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; width: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: rgb(17, 18, 19); touch-action: manipulation; }
-        
-        /* Main Container */
-        #app { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
-        
-        /* Top Bar */
-        #top-bar { position: absolute; top: 0; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; }
-        
-        .top-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: all 200ms; -webkit-tap-highlight-color: transparent; }
-        .top-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
-        
-        .view-tabs { display: flex; gap: 8px; }
-        .view-tab { padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer; transition: all 200ms; }
-        .view-tab.active { background: rgba(59,130,246,0.5); border-color: rgba(59,130,246,0.5); color: white; }
-        .view-tab:active { transform: scale(0.95); }
-        
-        /* Content Area */
-        #content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px 20px; position: relative; }
-        
-        /* Clock View */
-        #clock-view { display: none; width: 100%; align-items: center; justify-content: center; }
-        #clock-view.active { display: flex; }
-        #digital-clock { padding: 20px 30px; border: 1px solid rgba(105,105,105,0.38); border-radius: 50px; font-size: clamp(48px, 15vw, 120px); color: rgba(255,255,255,0.9); letter-spacing: 2px; background: rgba(96,96,96,0.36); box-shadow: 7px 7px 11px 0 rgba(0,0,0,0.46); text-shadow: 5px 5px 11px rgba(0,0,0,0.64); font-family: Arial, Helvetica, sans-serif; }
-        
-        /* Flow View */
-        #flow-view { display: none; width: 100%; flex-direction: column; align-items: center; }
-        #flow-view.active { display: flex; }
-        #mode-badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.1em; background: rgba(59,130,246,0.3); margin-bottom: 20px; }
-        
-        /* Timer Ring */
-        #timer-ring { position: relative; width: 220px; height: 220px; margin-bottom: 24px; }
-        #timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-        #timer-text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #time-display { font-size: 52px; font-weight: 300; color: white; font-family: ui-monospace, SFMono-Regular, monospace; letter-spacing: -0.02em; }
-        #status-text { margin-top: 4px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.15em; }
-        
-        /* Controls */
-        #controls { display: flex; align-items: center; gap: 16px; }
-        .ctrl-btn { display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; transition: all 200ms; -webkit-tap-highlight-color: transparent; }
-        .ctrl-btn:active { transform: scale(0.95); }
-        .ctrl-btn.small { width: 44px; height: 44px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); }
-        .ctrl-btn.small:active { background: rgba(255,255,255,0.15); }
-        .ctrl-btn.large { width: 60px; height: 60px; background: white; border: none; color: #1f2937; box-shadow: 0 8px 24px -6px rgba(0,0,0,0.4); }
-        .ctrl-btn.large:active { transform: scale(0.95); box-shadow: 0 4px 16px -4px rgba(0,0,0,0.3); }
-        
-        /* Mobile Optimizations */
-        @media (max-width: 480px) {
-            #top-bar { height: 56px; padding: 0 12px; }
-            .top-btn { width: 40px; height: 40px; font-size: 16px; }
-            .view-tab { padding: 6px 12px; font-size: 12px; }
-            #content { padding: 72px 16px 16px; }
-            #digital-clock { padding: 16px 24px; font-size: clamp(36px, 12vw, 64px); border-radius: 30px; }
-            #timer-ring { width: 180px; height: 180px; margin-bottom: 20px; }
-            #time-display { font-size: 42px; }
-            #controls { gap: 12px; }
-            .ctrl-btn.small { width: 40px; height: 40px; }
-            .ctrl-btn.large { width: 52px; height: 52px; }
-            #mode-badge { font-size: 11px; padding: 5px 12px; margin-bottom: 16px; }
-        }
-        
-        /* Landscape mode on mobile */
-        @media (max-height: 500px) and (max-width: 900px) {
-            #content { padding-top: 60px; flex-direction: row; justify-content: space-around; }
-            #timer-ring { width: 140px; height: 140px; margin-bottom: 12px; }
-            #time-display { font-size: 32px; }
-            #digital-clock { font-size: clamp(28px, 8vw, 48px); }
-        }
-        
-        /* Touch device optimizations */
-        @media (pointer: coarse) {
-            .ctrl-btn, .top-btn, .view-tab { touch-action: manipulation; }
-        }
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Time & Flow</title><style>*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%;width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#111213;touch-action:manipulation}#app{position:relative;width:100%;height:100%;display:flex;flex-direction:column}#top{position:absolute;top:0;left:0;right:0;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100}.btn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all 200ms}.btn:active{transform:scale(0.95);background:rgba(255,255,255,0.15)}.tabs{display:flex;gap:8px}.tab{padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-size:13px;cursor:pointer;transition:all 200ms}.tab.active{background:rgba(59,130,246,0.5);border-color:rgba(59,130,246,0.5);color:#fff}#content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px 20px;position:relative}.view{display:none;width:100%;flex-direction:column;align-items:center;justify-content:center}.view.active{display:flex}#clock{padding:20px 30px;border:1px solid rgba(105,105,105,0.38);border-radius:50px;font-size:clamp(48px,15vw,120px);color:rgba(255,255,255,0.9);letter-spacing:2px;background:rgba(96,96,96,0.36);box-shadow:7px 7px 11px 0 rgba(0,0,0,0.46);text-shadow:5px 5px 11px rgba(0,0,0,0.64);font-family:Arial,Helvetica,sans-serif}#badge{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:0.1em;background:rgba(59,130,246,0.3);margin-bottom:20px}#ring{position:relative;width:220px;height:220px;margin-bottom:24px}#ring svg{width:100%;height:100%;transform:rotate(-90deg)}#text{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center}#time{font-size:52px;font-weight:300;color:#fff;font-family:ui-monospace,SFMono-Regular,monospace;letter-spacing:-0.02em}#status{margin-top:4px;font-size:11px;font-weight:500;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.15em}#controls{display:flex;align-items:center;gap:16px}.ctrl{display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;transition:all 200ms;-webkit-tap-highlight-color:transparent}.ctrl:active{transform:scale(0.95)}.ctrl.small{width:44px;height:44px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}.ctrl.small:active{background:rgba(255,255,255,0.15)}.ctrl.large{width:60px;height:60px;background:#fff;border:none;color:#1f2937;box-shadow:0 8px 24px -6px rgba(0,0,0,0.4)}.ctrl.large:active{transform:scale(0.95);box-shadow:0 4px 16px -4px rgba(0,0,0,0.3)}@media(max-width:480px){#top{height:56px;padding:0 12px}#content{padding:72px 16px 16px}#clock{padding:16px 24px;font-size:clamp(36px,12vw,64px);border-radius:30px}#ring{width:180px;height:180px;margin-bottom:20px}#time{font-size:42px}#controls{gap:12px}.ctrl.small{width:40px;height:40px}.ctrl.large{width:52px;height:52px}#badge{font-size:11px;padding:5px 12px;margin-bottom:16px}}@media(max-height:500px)and(max-width:900px){#content{padding-top:60px;flex-direction:row;justify-content:space-around}#ring{width:140px;height:140px;margin-bottom:12px}#time{font-size:32px}#clock{font-size:clamp(28px,8vw,48px)}}@media(pointer:coarse){.ctrl,.btn,.tab{touch-action:manipulation}}
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- Top Bar -->
-        <div id="top-bar">
-            <button class="top-btn" id="settings-toggle" aria-label="Settings">&#9881;</button>
-            <div class="view-tabs">
-                <button class="view-tab" data-view="clock">Clock</button>
-                <button class="view-tab active" data-view="flow">Flow</button>
+        <div id="top">
+            <button class="btn" id="settings-btn" aria-label="Settings">&#9881;</button>
+            <div class="tabs">
+                <button class="tab" data-view="clock">Clock</button>
+                <button class="tab active" data-view="flow">Flow</button>
             </div>
         </div>
-        
-        <!-- Content -->
         <div id="content">
-            <!-- Clock View -->
-            <div id="clock-view">
-                <div id="digital-clock">00:00:00</div>
+            <div class="view" id="clock-view">
+                <div id="clock">00:00:00</div>
             </div>
-            
-            <!-- Flow View -->
-            <div id="flow-view" class="active">
-                <div id="mode-badge">Deep Work</div>
-                
-                <div id="timer-ring">
+            <div class="view active" id="flow-view">
+                <div id="badge">Deep Work</div>
+                <div id="ring">
                     <svg viewBox="0 0 280 280">
                         <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
-                        <circle id="progress-ring" cx="140" cy="140" r="120" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="754"/>
+                        <circle id="progress" cx="140" cy="140" r="120" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="754"/>
                     </svg>
-                    <div id="timer-text">
-                        <div id="time-display">25:00</div>
-                        <div id="status-text">Paused</div>
+                    <div id="text">
+                        <div id="time">25:00</div>
+                        <div id="status">Paused</div>
                     </div>
                 </div>
-                
                 <div id="controls">
-                    <button class="ctrl-btn small" id="reset-btn" aria-label="Reset">
+                    <button class="ctrl small" id="reset" aria-label="Reset">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/></svg>
                     </button>
-                    <button class="ctrl-btn large" id="play-btn" aria-label="Play/Pause">
-                        <svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-                        <svg id="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    <button class="ctrl large" id="play" aria-label="Play">
+                        <svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                        <svg id="icon-pause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                     </button>
-                    <button class="ctrl-btn small" id="mode-btn" aria-label="Switch Mode">
+                    <button class="ctrl small" id="switch" aria-label="Switch Mode">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    
     <script>
-        // Configuration
-        const config = {
-            workDuration: 25,
-            breakDuration: 5,
-            soundEnabled: true
-        };
-        
+        // Config
+        const cfg={work:25,break:5,sound:true};
         // State
-        let currentView = 'flow';
-        let mode = 'work';
-        let timeLeft = config.workDuration * 60;
-        let isRunning = false;
-        let interval = null;
-        let audioCtx = null;
-        
-        // DOM Elements
-        const clockView = document.getElementById('clock-view');
-        const flowView = document.getElementById('flow-view');
-        const digitalClock = document.getElementById('digital-clock');
-        const modeBadge = document.getElementById('mode-badge');
-        const timeDisplay = document.getElementById('time-display');
-        const statusText = document.getElementById('status-text');
-        const progressRing = document.getElementById('progress-ring');
-        const playIcon = document.getElementById('play-icon');
-        const pauseIcon = document.getElementById('pause-icon');
-        
-        // Audio for notifications
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
-        
-        function playBeep() {
-            if (!config.soundEnabled || !audioCtx) return;
-            
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            
-            osc.start(audioCtx.currentTime);
-            osc.stop(audioCtx.currentTime + 0.5);
-        }
-        
-        // Clock functionality
-        function updateClock() {
-            const now = new Date();
-            const h = String(now.getHours()).padStart(2, '0');
-            const m = String(now.getMinutes()).padStart(2, '0');
-            const s = String(now.getSeconds()).padStart(2, '0');
-            digitalClock.textContent = `${h}:${m}:${s}`;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-        
-        // View switching
-        function switchView(view) {
-            currentView = view;
-            document.querySelectorAll('.view-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.view === view);
-            });
-            
-            if (view === 'clock') {
-                clockView.classList.add('active');
-                flowView.classList.remove('active');
-            } else {
-                clockView.classList.remove('active');
-                flowView.classList.add('active');
-            }
-        }
-        
-        document.querySelectorAll('.view-tab').forEach(tab => {
-            tab.addEventListener('click', () => switchView(tab.dataset.view));
-        });
-        
-        // Timer functionality
-        function formatTime(seconds) {
-            const m = Math.floor(seconds / 60);
-            const s = seconds % 60;
-            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-        }
-        
-        function updateTimer() {
-            const totalTime = mode === 'work' ? config.workDuration * 60 : config.breakDuration * 60;
-            const progress = ((totalTime - timeLeft) / totalTime) * 100;
-            const circumference = 2 * Math.PI * 120;
-            const offset = circumference - (progress / 100) * circumference;
-            
-            timeDisplay.textContent = formatTime(timeLeft);
-            statusText.textContent = isRunning ? (mode === 'work' ? 'Focusing...' : 'Recharging...') : 'Paused';
-            modeBadge.textContent = mode === 'work' ? 'Deep Work' : 'Rest & Recover';
-            progressRing.style.strokeDashoffset = offset;
-            
-            playIcon.style.display = isRunning ? 'none' : 'block';
-            pauseIcon.style.display = isRunning ? 'block' : 'none';
-        }
-        
-        function toggleTimer() {
-            initAudio();
-            if (isRunning) {
-                clearInterval(interval);
-                isRunning = false;
-            } else {
-                isRunning = true;
-                interval = setInterval(() => {
-                    if (timeLeft <= 1) {
-                        clearInterval(interval);
-                        isRunning = false;
-                        playBeep();
-                        mode = mode === 'work' ? 'break' : 'work';
-                        timeLeft = (mode === 'work' ? config.workDuration : config.breakDuration) * 60;
-                    } else {
-                        timeLeft--;
-                    }
-                    updateTimer();
-                }, 1000);
-            }
-            updateTimer();
-        }
-        
-        function resetTimer() {
-            initAudio();
-            clearInterval(interval);
-            isRunning = false;
-            timeLeft = (mode === 'work' ? config.workDuration : config.breakDuration) * 60;
-            updateTimer();
-        }
-        
-        function switchMode() {
-            initAudio();
-            clearInterval(interval);
-            isRunning = false;
-            mode = mode === 'work' ? 'break' : 'work';
-            timeLeft = (mode === 'work' ? config.workDuration : config.breakDuration) * 60;
-            updateTimer();
-        }
-        
-        document.getElementById('play-btn').addEventListener('click', toggleTimer);
-        document.getElementById('reset-btn').addEventListener('click', resetTimer);
-        document.getElementById('mode-btn').addEventListener('click', switchMode);
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT') return;
-            
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (currentView === 'flow') toggleTimer();
-            } else if (e.key === 'r' || e.key === 'R') {
-                resetTimer();
-            } else if (e.key === 'm' || e.key === 'M') {
-                switchMode();
-            }
-        });
-        
-        // Initialize
-        updateTimer();
-        
-        // Mobile touch improvements
-        document.addEventListener('touchstart', function() {}, {passive: true});
+        let view='flow',mode='work',left=cfg.work*60,run=false,timer=null,actx=null;
+        // Elements
+        const $=id=>document.getElementById(id);
+        const clock=$('clock'),badge=$('badge'),time=$('time'),status=$('status'),prog=$('progress'),play=$('icon-play'),pause=$('icon-pause');
+        // Audio
+        const initAudio=()=>{if(!actx)actx=new(window.AudioContext||webkitAudioContext)();};
+        const beep=()=>{if(!cfg.sound||!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.setValueAtTime(880,actx.currentTime);g.gain.setValueAtTime(0.1,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,actx.currentTime+0.1);o.start();o.stop(actx.currentTime+0.1);};
+        // Clock
+        const updClock=()=>{const n=new Date(),h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');clock.textContent=`${h}:${m}:${s}`;};
+        setInterval(updClock,1000);updClock();
+        // View
+        const switchView=v=>{view=v;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));$(v+'-view').classList.add('active');$(v==='clock'?'flow':'clock')+'-view').classList.remove('active');};
+        document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
+        // Timer
+        const fmt=s=>{const m=Math.floor(s/60);return`${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;};
+        const updTimer=()=>{const total=(mode==='work'?cfg.work:cfg.break)*60,p=((total-left)/total)*100,c=2*Math.PI*120,o=c-(p/100)*c;time.textContent=fmt(left);status.textContent=run?(mode==='work'?'Focusing...':'Recharging...'):'Paused';badge.textContent=mode==='work'?'Deep Work':'Rest & Recover';prog.style.strokeDashoffset=o;play.style.display=run?'none':'block';pause.style.display=run?'block':'none';};
+        const toggle=()=>{initAudio();if(run){clearInterval(timer);run=false;}else{run=true;timer=setInterval(()=>{if(left<=1){clearInterval(timer);run=false;beep();mode=mode==='work'?'break':'work';left=(mode==='work'?cfg.work:cfg.break)*60;}else{left--;}updTimer();},1000);}updTimer();};
+        const reset=()=>{initAudio();clearInterval(timer);run=false;left=(mode==='work'?cfg.work:cfg.break)*60;updTimer();};
+        const switchMode=()=>{initAudio();clearInterval(timer);run=false;mode=mode==='work'?'break':'work';left=(mode==='work'?cfg.work:cfg.break)*60;updTimer();};
+        $('play').addEventListener('click',toggle);$('reset').addEventListener('click',reset);$('switch').addEventListener('click',switchMode);
+        // Keyboard
+        document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.code==='Space'){e.preventDefault();if(view==='flow')toggle();}else if(e.key==='r'||e.key==='R'){reset();}else if(e.key==='m'||e.key==='M'){switchMode();}});
+        // Init
+        updTimer();
+        // Settings panel (simplified inline)
+        const settingsBtn=$('settings-btn')||document.createElement('button');
+        if(!settingsBtn.id){settingsBtn.id='settings-btn';settingsBtn.className='btn';settingsBtn.innerHTML='&#9881;';settingsBtn.style.cssText='position:fixed;top:20px;left:20px;z-index:1000;';document.body.appendChild(settingsBtn);}
+        settingsBtn.onclick=()=>{const d=prompt('Work minutes:',cfg.work),b=prompt('Break minutes:',cfg.break);if(d)cfg.work=parseInt(d)||25;if(b)cfg.break=parseInt(b)||5;left=(mode==='work'?cfg.work:cfg.break)*60;updTimer();};
     </script>
-</body>
-</html>
+</body></html>
