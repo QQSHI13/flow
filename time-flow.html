@@ -212,11 +212,16 @@
         let rState = 0; // 0 = reset, 1 = switch mode
         document.addEventListener('keydown', e => {
             if (e.target.tagName === 'INPUT') return;
+            
+            // Space = Play/Pause (only in Flow view)
             if (e.code === 'Space') {
                 e.preventDefault();
                 if (V === 'flow') toggle();
-            } else if (e.key === 'r' || e.key === 'R') {
-                // R cycles: reset → switch mode
+                return;
+            }
+            
+            // R = cycles: reset → switch mode
+            if (e.key === 'r' || e.key === 'R') {
                 if (rState === 0) {
                     reset();
                     rState = 1;
@@ -224,9 +229,13 @@
                     switchM();
                     rState = 0;
                 }
-            } else if (e.key === 'm' || e.key === 'M') {
-                // M toggles between clock and flow views
+                return;
+            }
+            
+            // M = toggle between clock and flow views
+            if (e.key === 'm' || e.key === 'M') {
                 switchV(V === 'clock' ? 'flow' : 'clock');
+                return;
             }
         });
         
