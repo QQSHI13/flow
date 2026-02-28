@@ -27,42 +27,147 @@
         .ctrl.large { width: 60px; height: 60px; background: #fff; border: none; color: #1f2937; box-shadow: 0 8px 24px -6px rgba(0,0,0,0.4); }
         .ctrl.large:active { transform: scale(0.95); box-shadow: 0 4px 16px -4px rgba(0,0,0,0.3); }
         
-        /* Mobile */
-        @media (max-width: 480px) {
-            #ring { width: 180px; height: 180px; margin-bottom: 20px; }
-            #timer-time { font-size: 42px; }
-            #controls { gap: 12px; }
-            .ctrl.small { width: 40px; height: 40px; }
-            .ctrl.large { width: 52px; height: 52px; }
-            #badge { font-size: 11px; padding: 5px 12px; margin-bottom: 16px; }
+        /* Responsive sizing using CSS variables */
+        :root {
+            --ring-size: min(40vw, 40vh, 320px);
+            --timer-font: min(12vw, 12vh, 80px);
+            --btn-large: min(10vw, 10vh, 72px);
+            --btn-small: min(8vw, 8vh, 56px);
+            --badge-font: min(3vw, 3vh, 14px);
+        }
+        
+        /* Desktop: horizontal layout */
+        @media (min-width: 769px) {
+            #content {
+                flex-direction: row;
+                justify-content: center;
+                gap: 5vw;
+                padding: 40px;
+            }
+            
+            #timer-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            #controls-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 24px;
+            }
+            
+            #badge { 
+                font-size: var(--badge-font); 
+                padding: 8px 20px; 
+                margin-bottom: 24px; 
+            }
+            
+            #ring { 
+                width: var(--ring-size); 
+                height: var(--ring-size); 
+                margin-bottom: 0;
+            }
+            
+            #timer-time { font-size: var(--timer-font); }
+            
+            #timer-status { 
+                font-size: min(2.5vw, 2.5vh, 16px); 
+                margin-top: 8px;
+            }
+            
+            .ctrl.large { 
+                width: var(--btn-large); 
+                height: var(--btn-large); 
+            }
+            
+            .ctrl.small { 
+                width: var(--btn-small); 
+                height: var(--btn-small); 
+            }
+            
+            #controls { 
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+        
+        /* Mobile: vertical layout */
+        @media (max-width: 768px) {
+            :root {
+                --ring-size: min(60vw, 280px);
+                --timer-font: min(16vw, 64px);
+                --btn-large: min(16vw, 64px);
+                --btn-small: min(12vw, 48px);
+                --badge-font: 12px;
+            }
+            
+            #content {
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            #ring { 
+                width: var(--ring-size); 
+                height: var(--ring-size); 
+                margin-bottom: 24px;
+            }
+            
+            #timer-time { font-size: var(--timer-font); }
+            
+            #badge { 
+                font-size: var(--badge-font); 
+                padding: 6px 14px; 
+                margin-bottom: 16px;
+            }
+            
+            .ctrl.large { 
+                width: var(--btn-large); 
+                height: var(--btn-large); 
+            }
+            
+            .ctrl.small { 
+                width: var(--btn-small); 
+                height: var(--btn-small); 
+            }
+            
+            #controls { gap: 16px; }
+            
+            #timer-status { font-size: 11px; }
         }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="content">
-            <div id="badge">Deep Work</div>
-            <div id="ring">
-                <svg viewBox="0 0 280 280">
-                    <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
-                    <circle id="progress" cx="140" cy="140" r="120" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="754"/>
-                </svg>
-                <div id="timer-text">
-                    <div id="timer-time">25:00</div>
-                    <div id="timer-status">Paused</div>
+            <div id="timer-section">
+                <div id="badge">Deep Work</div>
+                <div id="ring">
+                    <svg viewBox="0 0 280 280">
+                        <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                        <circle id="progress" cx="140" cy="140" r="120" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="754"/>
+                    </svg>
+                    <div id="timer-text">
+                        <div id="timer-time">25:00</div>
+                        <div id="timer-status">Paused</div>
+                    </div>
                 </div>
             </div>
-            <div id="controls">
-                <button class="ctrl small" id="reset-btn" aria-label="Reset">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/></svg>
-                </button>
-                <button class="ctrl large" id="play-btn" aria-label="Play">
-                    <svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-                    <svg id="icon-pause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                </button>
-                <button class="ctrl small" id="mode-btn" aria-label="Switch Mode">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-                </button>
+            <div id="controls-section">
+                <div id="controls">
+                    <button class="ctrl small" id="reset-btn" aria-label="Reset">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/></svg>
+                    </button>
+                    <button class="ctrl large" id="play-btn" aria-label="Play">
+                        <svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                        <svg id="icon-pause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    </button>
+                    <button class="ctrl small" id="mode-btn" aria-label="Switch Mode">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -172,12 +277,6 @@
                 } else {
                     switchMode();
                 }
-                return;
-            }
-            
-            // M = switch mode (alt shortcut)
-            if (e.key === 'm' || e.key === 'M') {
-                switchMode();
                 return;
             }
         });
