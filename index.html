@@ -188,16 +188,24 @@
             }
             
             #clock {
-                position: static;
-                display: inline-block;
-                margin-left: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 36px;
+                padding: 0 14px;
+                border-radius: 18px;
                 font-size: 14px;
-                padding: 4px 10px;
             }
             
             #badge {
-                display: inline-block;
-                margin-bottom: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 36px;
+                padding: 6px 14px;
+                border-radius: 18px;
+                font-size: 16px;
+                margin-bottom: 16px;
             }
             
             #timer-section {
@@ -216,12 +224,6 @@
             }
             
             #timer-time { font-size: var(--timer-font); }
-            
-            #badge { 
-                font-size: var(--badge-font); 
-                padding: 6px 14px; 
-                margin-bottom: 16px;
-            }
             
             .ctrl.large { 
                 width: var(--btn-large); 
