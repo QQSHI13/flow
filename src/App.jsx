@@ -23,14 +23,16 @@ function App() {
   const totalTime = mode === 'work' ? WORK_TIME : BREAK_TIME;
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
 
+  // Auto-start timer effect - starts timer when mode changes
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
-            setIsRunning(false);
+            // Switch mode and continue running (auto-start)
             const newMode = mode === 'work' ? 'break' : 'work';
             setMode(newMode);
+            // Keep isRunning true to continue automatically
             return newMode === 'work' ? WORK_TIME : BREAK_TIME;
           }
           return prev - 1;
