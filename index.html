@@ -784,12 +784,14 @@
             } else {
                 isRunning = true;
                 saveState();
-                // Enter fullscreen when started
-                const elem = document.documentElement;
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(err => console.log('Fullscreen not allowed'));
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
+                // Enter fullscreen when started (only on desktop)
+                if (window.innerWidth > 768) {
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(err => console.log('Fullscreen not allowed'));
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    }
                 }
                 timerInterval = setInterval(() => {
                     if (timeLeft <= 1) {
