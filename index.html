@@ -722,15 +722,17 @@
         // Config - use custom values
         const SESSIONS_BEFORE_LONG_BREAK = 4;
         
-        // State
-        let mode = 'work'; // 'work', 'shortBreak', 'longBreak'
-        let timeLeft = customWorkMinutes * 60;
+        // State (initialized with defaults, will be overwritten by loadState if saved state exists)
+        let mode = 'work';
+        let timeLeft = 25 * 60; // Default, will be updated after loading settings/state
         let isRunning = false;
         let timerInterval = null;
         let workSessionsCompleted = 0;
         
         // Load settings first
         loadSettings();
+        
+        // Set default timeLeft based on custom settings (will be overwritten by loadState if saved)
         timeLeft = customWorkMinutes * 60;
         
         // DOM refs
@@ -1052,7 +1054,11 @@
         setInterval(updateClock, 1000);
         
         // Init - load saved state if available
-        loadState();
+        const stateLoaded = loadState();
+        if (!stateLoaded) {
+            // No saved state, use defaults based on custom settings
+            timeLeft = customWorkMinutes * 60;
+        }
         updateDisplay();
         
         // If timer was running when saved, restart the interval
@@ -1078,6 +1084,8 @@
                 updateDisplay();
                 saveState();
             }, 1000);
+            // Save state immediately on load to ensure it's fresh
+            saveState();
         }
     </script>
 </body>
