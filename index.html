@@ -931,6 +931,9 @@
         // Keyboard shortcuts
         // R = if running: reset; if paused: switch mode
         document.addEventListener('keydown', e => {
+            // Skip if Ctrl or Cmd is pressed (let browser handle shortcuts like Ctrl+R)
+            if (e.ctrlKey || e.metaKey) return;
+            
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             
             // Space = Play/Pause
