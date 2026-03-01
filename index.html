@@ -127,7 +127,17 @@
             transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #timer-text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #timer-time { font-size: 52px; font-weight: 300; color: #fff; font-family: ui-monospace, SFMono-Regular, monospace; letter-spacing: -0.02em; }
+        #timer-time { 
+            font-size: 52px; 
+            font-weight: 300; 
+            color: #fff; 
+            font-family: ui-monospace, SFMono-Regular, monospace; 
+            letter-spacing: -0.02em;
+            transition: transform 0.15s ease-out;
+        }
+        #timer-time.changing {
+            transform: scale(1.05);
+        }
         #timer-status { margin-top: 4px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.15em; }
         #controls { display: flex; align-items: center; gap: 16px; }
         .ctrl { display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; transition: transform 0.15s ease-out; }
@@ -796,7 +806,13 @@
             const circumference = 2 * Math.PI * 120;
             const offset = circumference - (progress / 100) * circumference;
             
-            timerTime.textContent = formatTime(timeLeft);
+            // Update timer with animation
+            const timeString = formatTime(timeLeft);
+            if (timerTime.textContent !== timeString) {
+                timerTime.classList.add('changing');
+                timerTime.textContent = timeString;
+                setTimeout(() => timerTime.classList.remove('changing'), 150);
+            }
             
             if (isRunning) {
                 if (mode === 'work') {
@@ -828,7 +844,7 @@
         }
         
         // Sound effect for mode switch
-        function playModeSwitchSound() {
+        function playModeSwitchSound(soundType = 'default') {
             if (!soundEnabled) return;
             
             // Vibrate on mobile (200ms pattern)
@@ -843,16 +859,37 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             
-            // Play a pleasant chime
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-            oscillator.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1); // C6
-            
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 0.5);
+            // Different sounds for different events
+            if (soundType === 'workEnd') {
+                // Work finished - triumphant ascending major chord (C5-E5-G5)
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+                oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.3); // G5
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.8);
+            } else if (soundType === 'breakEnd') {
+                // Break finished - gentle descending pattern (G5-E5-C5)
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime); // G5
+                oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.3); // C5
+                gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.8);
+            } else {
+                // Default/manual switch - original pleasant chime
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                oscillator.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1); // C6
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            }
         }
         
         // Wake Lock to prevent screen from sleeping
@@ -906,8 +943,9 @@
                 }
                 timerInterval = setInterval(() => {
                     if (timeLeft <= 1) {
-                        // Play sound before switching
-                        playModeSwitchSound();
+                        // Determine sound type before switching mode
+                        const soundType = mode === 'work' ? 'workEnd' : 'breakEnd';
+                        playModeSwitchSound(soundType);
                         
                         // Auto-switch mode based on Pomodoro logic
                         if (mode === 'work') {
