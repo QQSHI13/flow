@@ -123,6 +123,9 @@
         }
         #ring { position: relative; width: 220px; height: 220px; margin-bottom: 24px; }
         #ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        #progress {
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         #timer-text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #timer-time { font-size: 52px; font-weight: 300; color: #fff; font-family: ui-monospace, SFMono-Regular, monospace; letter-spacing: -0.02em; }
         #timer-status { margin-top: 4px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.15em; }
@@ -557,6 +560,14 @@
                         </div>
                     </label>
                 </div>
+                <div class="settings-row">
+                    <span class="settings-label">Vibrate on mode switch</span>
+                    <label class="settings-toggle" id="vibrate-toggle">
+                        <div class="toggle-switch active">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </label>
+                </div>
             </div>
             
             <div class="settings-section">
@@ -585,6 +596,7 @@
         let customLongBreakMinutes = 15;
         let cookiesEnabled = true;
         let soundEnabled = true;
+        let vibrateEnabled = true;
         
         const settingsModal = document.getElementById('settings-modal');
         const settingsBtn = document.getElementById('settings-btn');
@@ -597,6 +609,8 @@
         const toggleSwitch = cookieToggle.querySelector('.toggle-switch');
         const soundToggle = document.getElementById('sound-toggle');
         const soundToggleSwitch = soundToggle.querySelector('.toggle-switch');
+        const vibrateToggle = document.getElementById('vibrate-toggle');
+        const vibrateToggleSwitch = vibrateToggle.querySelector('.toggle-switch');
         
         function openSettings() {
             workMinutesInput.value = customWorkMinutes;
@@ -612,6 +626,11 @@
             } else {
                 soundToggleSwitch.classList.remove('active');
             }
+            if (vibrateEnabled) {
+                vibrateToggleSwitch.classList.add('active');
+            } else {
+                vibrateToggleSwitch.classList.remove('active');
+            }
             settingsModal.classList.add('active');
         }
         
@@ -625,6 +644,7 @@
             customLongBreakMinutes = parseInt(longBreakMinutesInput.value) || 15;
             cookiesEnabled = toggleSwitch.classList.contains('active');
             soundEnabled = soundToggleSwitch.classList.contains('active');
+            vibrateEnabled = vibrateToggleSwitch.classList.contains('active');
             
             // Save to cookie
             if (cookiesEnabled) {
@@ -633,7 +653,8 @@
                     shortBreakMinutes: customShortBreakMinutes,
                     longBreakMinutes: customLongBreakMinutes,
                     cookiesEnabled: cookiesEnabled,
-                    soundEnabled: soundEnabled
+                    soundEnabled: soundEnabled,
+                    vibrateEnabled: vibrateEnabled
                 };
                 setCookie('flowSettings', JSON.stringify(settings), 365);
             }
@@ -663,6 +684,7 @@
                     customLongBreakMinutes = settings.longBreakMinutes || 15;
                     cookiesEnabled = settings.cookiesEnabled !== false;
                     soundEnabled = settings.soundEnabled !== false;
+                    vibrateEnabled = settings.vibrateEnabled !== false;
                 } catch (e) {
                     console.log('Failed to load settings:', e);
                 }
@@ -683,6 +705,7 @@
                 customLongBreakMinutes = 15;
                 cookiesEnabled = true;
                 soundEnabled = true;
+                vibrateEnabled = true;
                 
                 // Clear cookies
                 setCookie('flowSettings', '', -1);
@@ -701,6 +724,7 @@
                 longBreakMinutesInput.value = customLongBreakMinutes;
                 toggleSwitch.classList.add('active');
                 soundToggleSwitch.classList.add('active');
+                vibrateToggleSwitch.classList.add('active');
                 updateDisplay();
                 
                 alert('Settings reset to defaults!');
@@ -713,6 +737,10 @@
         
         soundToggle.addEventListener('click', () => {
             soundToggleSwitch.classList.toggle('active');
+        });
+        
+        vibrateToggle.addEventListener('click', () => {
+            vibrateToggleSwitch.classList.toggle('active');
         });
         
         // Close modal when clicking outside
@@ -802,6 +830,11 @@
         // Sound effect for mode switch
         function playModeSwitchSound() {
             if (!soundEnabled) return;
+            
+            // Vibrate on mobile (200ms pattern)
+            if (vibrateEnabled && 'vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200]);
+            }
             
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioCtx.createOscillator();
