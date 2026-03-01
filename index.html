@@ -12,13 +12,14 @@
         /* Content */
         #content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
         
-        /* Header with status and clock widget on top left */
+        /* Header with status and clock widget on top left - stacked vertically */
         #header {
             position: absolute;
             top: 24px;
             left: 24px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
             gap: 8px;
             z-index: 10;
         }
