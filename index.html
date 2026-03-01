@@ -409,6 +409,7 @@
             if (isRunning) {
                 clearInterval(timerInterval);
                 isRunning = false;
+                saveState();
                 // Exit fullscreen when paused
                 if (document.exitFullscreen) {
                     document.exitFullscreen().catch(err => console.log('Exit fullscreen failed'));
@@ -417,6 +418,7 @@
                 }
             } else {
                 isRunning = true;
+                saveState();
                 // Enter fullscreen when started
                 const elem = document.documentElement;
                 if (elem.requestFullscreen) {
@@ -446,6 +448,7 @@
                         timeLeft--;
                     }
                     updateDisplay();
+                    saveState();
                 }, 1000);
             }
             updateDisplay();
@@ -462,6 +465,7 @@
             } else {
                 timeLeft = LONG_BREAK_MINUTES * 60;
             }
+            saveState();
             updateDisplay();
         }
         
@@ -479,6 +483,7 @@
                 mode = 'work';
                 timeLeft = WORK_MINUTES * 60;
             }
+            saveState();
             updateDisplay();
         }
         
@@ -525,6 +530,96 @@
             }
         });
         
+        // Cookie functions
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+        }
+        
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) {
+                    return decodeURIComponent(c.substring(nameEQ.length));
+                }
+            }
+            return null;
+        }
+        
+        // Save state to cookie
+        function saveState() {
+            const state = {
+                mode: mode,
+                timeLeft: timeLeft,
+                isRunning: isRunning,
+                workSessionsCompleted: workSessionsCompleted,
+                timestamp: Date.now()
+            };
+            setCookie('flowState', JSON.stringify(state), 30);
+        }
+        
+        // Load state from cookie
+        function loadState() {
+            const saved = getCookie('flowState');
+            if (!saved) return false;
+            
+            try {
+                const state = JSON.parse(saved);
+                const now = Date.now();
+                const elapsed = Math.floor((now - state.timestamp) / 1000);
+                
+                mode = state.mode || 'work';
+                workSessionsCompleted = state.workSessionsCompleted || 0;
+                
+                // Calculate remaining time
+                if (state.isRunning) {
+                    // Timer was running when saved - subtract elapsed time
+                    timeLeft = Math.max(0, state.timeLeft - elapsed);
+                    
+                    // If timer expired while away, switch modes
+                    if (timeLeft <= 0) {
+                        // Auto-switch based on what mode we were in
+                        if (mode === 'work') {
+                            workSessionsCompleted++;
+                            if (workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK === 0) {
+                                mode = 'longBreak';
+                                timeLeft = LONG_BREAK_MINUTES * 60;
+                            } else {
+                                mode = 'shortBreak';
+                                timeLeft = SHORT_BREAK_MINUTES * 60;
+                            }
+                        } else {
+                            mode = 'work';
+                            timeLeft = WORK_MINUTES * 60;
+                        }
+                        isRunning = false; // Stop when returning after timer expired
+                    } else {
+                        isRunning = true; // Resume running
+                    }
+                } else {
+                    // Timer was paused - keep same time
+                    timeLeft = state.timeLeft;
+                    isRunning = false;
+                }
+                
+                return true;
+            } catch (e) {
+                console.log('Failed to load state:', e);
+                return false;
+            }
+        }
+        
+        // Save state before page unload
+        window.addEventListener('beforeunload', saveState);
+        
+        // Also save periodically while running
+        setInterval(() => {
+            if (isRunning) saveState();
+        }, 10000); // Save every 10 seconds while running
+        
         // Clock
         const clock = document.getElementById('clock');
         function updateClock() {
@@ -536,8 +631,34 @@
         updateClock();
         setInterval(updateClock, 1000);
         
-        // Init
+        // Init - load saved state if available
+        loadState();
         updateDisplay();
+        
+        // If timer was running when saved, restart the interval
+        if (isRunning) {
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 1) {
+                    if (mode === 'work') {
+                        workSessionsCompleted++;
+                        if (workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK === 0) {
+                            mode = 'longBreak';
+                            timeLeft = LONG_BREAK_MINUTES * 60;
+                        } else {
+                            mode = 'shortBreak';
+                            timeLeft = SHORT_BREAK_MINUTES * 60;
+                        }
+                    } else {
+                        mode = 'work';
+                        timeLeft = WORK_MINUTES * 60;
+                    }
+                } else {
+                    timeLeft--;
+                }
+                updateDisplay();
+                saveState();
+            }, 1000);
+        }
     </script>
 </body>
 </html>
