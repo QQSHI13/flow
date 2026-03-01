@@ -257,15 +257,27 @@
             if (isRunning) {
                 clearInterval(timerInterval);
                 isRunning = false;
+                // Exit fullscreen when paused
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => console.log('Exit fullscreen failed'));
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
             } else {
                 isRunning = true;
+                // Enter fullscreen when started
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log('Fullscreen not allowed'));
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                }
                 timerInterval = setInterval(() => {
                     if (timeLeft <= 1) {
-                        clearInterval(timerInterval);
-                        isRunning = false;
-                        // Auto-switch mode
+                        // Auto-switch mode and continue running
                         mode = mode === 'work' ? 'break' : 'work';
                         timeLeft = (mode === 'work' ? WORK_MINUTES : BREAK_MINUTES) * 60;
+                        // Keep timer running - don't clearInterval or set isRunning=false
                     } else {
                         timeLeft--;
                     }
