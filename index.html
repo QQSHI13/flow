@@ -446,6 +446,22 @@
         #settings-save:hover {
             background: rgba(59,130,246,1);
         }
+        
+        .settings-reset-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 8px;
+            color: rgba(239, 68, 68, 0.9);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .settings-reset-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -533,9 +549,15 @@
             </div>
             
             <div class="settings-section">
+                <div class="settings-section-title">Data</div>
+                <button id="settings-reset" class="settings-reset-btn">Reset All Settings</button>
+            </div>
+            
+            <div class="settings-section">
                 <div class="settings-credits">
                     <strong>Time & Flow</strong><br>
-                    A Pomodoro timer by QQ<br><br>
+                    A Pomodoro timer by QQ<br>
+                    With help from Nova ☄️<br><br>
                     Built with ❤️ using vanilla JS<br>
                     <a href="https://github.com/QQSHI13/flow" target="_blank">View on GitHub</a>
                 </div>
@@ -628,6 +650,38 @@
         settingsBtn.addEventListener('click', openSettings);
         settingsClose.addEventListener('click', closeSettings);
         settingsSave.addEventListener('click', saveSettings);
+        
+        // Reset button handler
+        const settingsReset = document.getElementById('settings-reset');
+        settingsReset.addEventListener('click', () => {
+            if (confirm('Reset all settings to default? This will also clear saved state.')) {
+                // Reset to defaults
+                customWorkMinutes = 25;
+                customShortBreakMinutes = 5;
+                customLongBreakMinutes = 15;
+                cookiesEnabled = true;
+                
+                // Clear cookies
+                setCookie('flowSettings', '', -1);
+                setCookie('flowState', '', -1);
+                
+                // Reset timer
+                clearInterval(timerInterval);
+                isRunning = false;
+                mode = 'work';
+                timeLeft = customWorkMinutes * 60;
+                workSessionsCompleted = 0;
+                
+                // Update UI
+                workMinutesInput.value = customWorkMinutes;
+                shortBreakMinutesInput.value = customShortBreakMinutes;
+                longBreakMinutesInput.value = customLongBreakMinutes;
+                toggleSwitch.classList.add('active');
+                updateDisplay();
+                
+                alert('Settings reset to defaults!');
+            }
+        });
         
         cookieToggle.addEventListener('click', () => {
             toggleSwitch.classList.toggle('active');
