@@ -822,12 +822,36 @@
             oscillator.stop(audioCtx.currentTime + 0.5);
         }
         
+        // Wake Lock to prevent screen from sleeping
+        let wakeLock = null;
+        
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake Lock released');
+                    });
+                } catch (err) {
+                    console.log('Wake Lock failed:', err);
+                }
+            }
+        }
+        
+        function releaseWakeLock() {
+            if (wakeLock) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+        
         // Toggle timer
         function toggle() {
             if (isRunning) {
                 clearInterval(timerInterval);
                 isRunning = false;
                 saveState();
+                releaseWakeLock(); // Release wake lock when paused
                 // Exit fullscreen when paused
                 if (document.exitFullscreen) {
                     document.exitFullscreen().catch(err => console.log('Exit fullscreen failed'));
@@ -837,6 +861,7 @@
             } else {
                 isRunning = true;
                 saveState();
+                requestWakeLock(); // Request wake lock when starting
                 // Enter fullscreen when started (only on desktop)
                 if (window.innerWidth > 768) {
                     const elem = document.documentElement;
@@ -881,6 +906,7 @@
         function reset() {
             clearInterval(timerInterval);
             isRunning = false;
+            releaseWakeLock();
             if (mode === 'work') {
                 timeLeft = customWorkMinutes * 60;
             } else if (mode === 'shortBreak') {
@@ -896,6 +922,7 @@
         function switchMode() {
             clearInterval(timerInterval);
             isRunning = false;
+            releaseWakeLock();
             playModeSwitchSound(); // Play sound on manual switch
             if (mode === 'work') {
                 mode = 'shortBreak';
