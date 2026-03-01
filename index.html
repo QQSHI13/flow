@@ -332,13 +332,16 @@
     <script>
         // Config
         const WORK_MINUTES = 25;
-        const BREAK_MINUTES = 5;
+        const SHORT_BREAK_MINUTES = 5;
+        const LONG_BREAK_MINUTES = 15;
+        const SESSIONS_BEFORE_LONG_BREAK = 4;
         
         // State
-        let mode = 'work';
+        let mode = 'work'; // 'work', 'shortBreak', 'longBreak'
         let timeLeft = WORK_MINUTES * 60;
         let isRunning = false;
         let timerInterval = null;
+        let workSessionsCompleted = 0;
         
         // DOM refs
         const badge = document.getElementById('badge');
@@ -357,14 +360,41 @@
         
         // Update UI
         function updateDisplay() {
-            const totalTime = (mode === 'work' ? WORK_MINUTES : BREAK_MINUTES) * 60;
+            let totalTime;
+            if (mode === 'work') {
+                totalTime = WORK_MINUTES * 60;
+            } else if (mode === 'shortBreak') {
+                totalTime = SHORT_BREAK_MINUTES * 60;
+            } else {
+                totalTime = LONG_BREAK_MINUTES * 60;
+            }
+            
             const progress = ((totalTime - timeLeft) / totalTime) * 100;
             const circumference = 2 * Math.PI * 120;
             const offset = circumference - (progress / 100) * circumference;
             
             timerTime.textContent = formatTime(timeLeft);
-            timerStatus.textContent = isRunning ? (mode === 'work' ? 'Focusing...' : 'Recharging...') : 'Paused';
-            badge.textContent = mode === 'work' ? 'Deep Work' : 'Rest & Recover';
+            
+            if (isRunning) {
+                if (mode === 'work') {
+                    timerStatus.textContent = 'Focusing...';
+                } else if (mode === 'shortBreak') {
+                    timerStatus.textContent = 'Short Break';
+                } else {
+                    timerStatus.textContent = 'Long Break';
+                }
+            } else {
+                timerStatus.textContent = 'Paused';
+            }
+            
+            if (mode === 'work') {
+                badge.textContent = `Deep Work ${workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK + 1}/${SESSIONS_BEFORE_LONG_BREAK}`;
+            } else if (mode === 'shortBreak') {
+                badge.textContent = 'Short Rest';
+            } else {
+                badge.textContent = 'Long Rest';
+            }
+            
             progressCircle.style.strokeDashoffset = offset;
             iconPlay.style.display = isRunning ? 'none' : 'block';
             iconPause.style.display = isRunning ? 'block' : 'none';
@@ -392,9 +422,21 @@
                 }
                 timerInterval = setInterval(() => {
                     if (timeLeft <= 1) {
-                        // Auto-switch mode and continue running
-                        mode = mode === 'work' ? 'break' : 'work';
-                        timeLeft = (mode === 'work' ? WORK_MINUTES : BREAK_MINUTES) * 60;
+                        // Auto-switch mode based on Pomodoro logic
+                        if (mode === 'work') {
+                            workSessionsCompleted++;
+                            if (workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK === 0) {
+                                mode = 'longBreak';
+                                timeLeft = LONG_BREAK_MINUTES * 60;
+                            } else {
+                                mode = 'shortBreak';
+                                timeLeft = SHORT_BREAK_MINUTES * 60;
+                            }
+                        } else {
+                            // After any break, go back to work
+                            mode = 'work';
+                            timeLeft = WORK_MINUTES * 60;
+                        }
                         // Keep timer running - don't clearInterval or set isRunning=false
                     } else {
                         timeLeft--;
@@ -409,16 +451,30 @@
         function reset() {
             clearInterval(timerInterval);
             isRunning = false;
-            timeLeft = (mode === 'work' ? WORK_MINUTES : BREAK_MINUTES) * 60;
+            if (mode === 'work') {
+                timeLeft = WORK_MINUTES * 60;
+            } else if (mode === 'shortBreak') {
+                timeLeft = SHORT_BREAK_MINUTES * 60;
+            } else {
+                timeLeft = LONG_BREAK_MINUTES * 60;
+            }
             updateDisplay();
         }
         
-        // Switch mode
+        // Switch mode manually (cycles through: work -> shortBreak -> longBreak -> work)
         function switchMode() {
             clearInterval(timerInterval);
             isRunning = false;
-            mode = mode === 'work' ? 'break' : 'work';
-            timeLeft = (mode === 'work' ? WORK_MINUTES : BREAK_MINUTES) * 60;
+            if (mode === 'work') {
+                mode = 'shortBreak';
+                timeLeft = SHORT_BREAK_MINUTES * 60;
+            } else if (mode === 'shortBreak') {
+                mode = 'longBreak';
+                timeLeft = LONG_BREAK_MINUTES * 60;
+            } else {
+                mode = 'work';
+                timeLeft = WORK_MINUTES * 60;
+            }
             updateDisplay();
         }
         
