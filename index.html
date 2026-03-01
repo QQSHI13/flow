@@ -546,6 +546,14 @@
                         </div>
                     </label>
                 </div>
+                <div class="settings-row">
+                    <span class="settings-label">Sound on mode switch</span>
+                    <label class="settings-toggle" id="sound-toggle">
+                        <div class="toggle-switch active">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </label>
+                </div>
             </div>
             
             <div class="settings-section">
@@ -573,6 +581,7 @@
         let customShortBreakMinutes = 5;
         let customLongBreakMinutes = 15;
         let cookiesEnabled = true;
+        let soundEnabled = true;
         
         const settingsModal = document.getElementById('settings-modal');
         const settingsBtn = document.getElementById('settings-btn');
@@ -583,6 +592,8 @@
         const longBreakMinutesInput = document.getElementById('long-break-minutes');
         const cookieToggle = document.getElementById('cookie-toggle');
         const toggleSwitch = cookieToggle.querySelector('.toggle-switch');
+        const soundToggle = document.getElementById('sound-toggle');
+        const soundToggleSwitch = soundToggle.querySelector('.toggle-switch');
         
         function openSettings() {
             workMinutesInput.value = customWorkMinutes;
@@ -592,6 +603,11 @@
                 toggleSwitch.classList.add('active');
             } else {
                 toggleSwitch.classList.remove('active');
+            }
+            if (soundEnabled) {
+                soundToggleSwitch.classList.add('active');
+            } else {
+                soundToggleSwitch.classList.remove('active');
             }
             settingsModal.classList.add('active');
         }
@@ -605,6 +621,7 @@
             customShortBreakMinutes = parseInt(shortBreakMinutesInput.value) || 5;
             customLongBreakMinutes = parseInt(longBreakMinutesInput.value) || 15;
             cookiesEnabled = toggleSwitch.classList.contains('active');
+            soundEnabled = soundToggleSwitch.classList.contains('active');
             
             // Save to cookie
             if (cookiesEnabled) {
@@ -612,7 +629,8 @@
                     workMinutes: customWorkMinutes,
                     shortBreakMinutes: customShortBreakMinutes,
                     longBreakMinutes: customLongBreakMinutes,
-                    cookiesEnabled: cookiesEnabled
+                    cookiesEnabled: cookiesEnabled,
+                    soundEnabled: soundEnabled
                 };
                 setCookie('flowSettings', JSON.stringify(settings), 365);
             }
@@ -641,6 +659,7 @@
                     customShortBreakMinutes = settings.shortBreakMinutes || 5;
                     customLongBreakMinutes = settings.longBreakMinutes || 15;
                     cookiesEnabled = settings.cookiesEnabled !== false;
+                    soundEnabled = settings.soundEnabled !== false;
                 } catch (e) {
                     console.log('Failed to load settings:', e);
                 }
@@ -660,6 +679,7 @@
                 customShortBreakMinutes = 5;
                 customLongBreakMinutes = 15;
                 cookiesEnabled = true;
+                soundEnabled = true;
                 
                 // Clear cookies
                 setCookie('flowSettings', '', -1);
@@ -677,6 +697,7 @@
                 shortBreakMinutesInput.value = customShortBreakMinutes;
                 longBreakMinutesInput.value = customLongBreakMinutes;
                 toggleSwitch.classList.add('active');
+                soundToggleSwitch.classList.add('active');
                 updateDisplay();
                 
                 alert('Settings reset to defaults!');
@@ -685,6 +706,10 @@
         
         cookieToggle.addEventListener('click', () => {
             toggleSwitch.classList.toggle('active');
+        });
+        
+        soundToggle.addEventListener('click', () => {
+            soundToggleSwitch.classList.toggle('active');
         });
         
         // Close modal when clicking outside
@@ -771,6 +796,8 @@
         
         // Sound effect for mode switch
         function playModeSwitchSound() {
+            if (!soundEnabled) return;
+            
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
