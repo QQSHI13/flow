@@ -864,6 +864,7 @@
         function switchMode() {
             clearInterval(timerInterval);
             isRunning = false;
+            playModeSwitchSound(); // Play sound on manual switch
             if (mode === 'work') {
                 mode = 'shortBreak';
                 timeLeft = customShortBreakMinutes * 60;
