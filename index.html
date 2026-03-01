@@ -12,15 +12,16 @@
         /* Content */
         #content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
         
-        /* Header with status and clock on same line */
+        /* Header with status and clock centered */
         #header {
             position: absolute;
             top: 24px;
-            left: 24px;
-            right: 24px;
+            left: 0;
+            right: 0;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            gap: 16px;
             z-index: 10;
         }
         
@@ -68,8 +69,9 @@
         @media (max-width: 768px) {
             #header {
                 top: 16px;
-                left: 16px;
-                right: 16px;
+                left: 0;
+                right: 0;
+                gap: 12px;
             }
             
             #badge {
