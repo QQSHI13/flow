@@ -388,7 +388,11 @@
             }
             
             if (mode === 'work') {
-                badge.textContent = `Deep Work ${workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK + 1}/${SESSIONS_BEFORE_LONG_BREAK}`;
+                if (isRunning) {
+                    badge.textContent = `Deep Work ${workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK + 1}/${SESSIONS_BEFORE_LONG_BREAK}`;
+                } else {
+                    badge.textContent = 'Deep Work';
+                }
             } else if (mode === 'shortBreak') {
                 badge.textContent = 'Short Rest';
             } else {
