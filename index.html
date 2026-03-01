@@ -133,10 +133,6 @@
             color: #fff; 
             font-family: ui-monospace, SFMono-Regular, monospace; 
             letter-spacing: -0.02em;
-            transition: transform 0.15s ease-out;
-        }
-        #timer-time.changing {
-            transform: scale(1.05);
         }
         #timer-status { margin-top: 4px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.15em; }
         #controls { display: flex; align-items: center; gap: 16px; }
@@ -806,13 +802,7 @@
             const circumference = 2 * Math.PI * 120;
             const offset = circumference - (progress / 100) * circumference;
             
-            // Update timer with animation
-            const timeString = formatTime(timeLeft);
-            if (timerTime.textContent !== timeString) {
-                timerTime.classList.add('changing');
-                timerTime.textContent = timeString;
-                setTimeout(() => timerTime.classList.remove('changing'), 150);
-            }
+            timerTime.textContent = formatTime(timeLeft);
             
             if (isRunning) {
                 if (mode === 'work') {
