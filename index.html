@@ -138,6 +138,28 @@
                 --badge-font: 16px;
             }
             
+            /* Status and clock on same line for mobile */
+            #app {
+                position: relative;
+            }
+            
+            #clock {
+                position: static;
+                display: inline-block;
+                margin-left: 10px;
+                font-size: 14px;
+                padding: 4px 10px;
+            }
+            
+            #badge {
+                display: inline-block;
+                margin-bottom: 0;
+            }
+            
+            #timer-section {
+                width: 100%;
+            }
+            
             #content {
                 flex-direction: column;
                 justify-content: center;
