@@ -279,6 +279,173 @@
             
             #timer-status { font-size: 11px; }
         }
+        
+        /* Settings Modal */
+        #settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #settings-modal.active {
+            display: flex;
+        }
+        
+        #settings-content {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        #settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        #settings-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        #settings-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        #settings-close:hover {
+            color: #fff;
+        }
+        
+        .settings-section {
+            margin-bottom: 24px;
+        }
+        
+        .settings-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+        
+        .settings-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .settings-input {
+            width: 70px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .settings-input:focus {
+            outline: none;
+            border-color: rgba(59,130,246,0.5);
+        }
+        
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            position: relative;
+            transition: background 0.2s;
+        }
+        
+        .toggle-switch.active {
+            background: rgba(59,130,246,0.8);
+        }
+        
+        .toggle-knob {
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        
+        .toggle-switch.active .toggle-knob {
+            transform: translateX(20px);
+        }
+        
+        .settings-credits {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .settings-credits a {
+            color: rgba(59,130,246,0.8);
+            text-decoration: none;
+        }
+        
+        .settings-credits a:hover {
+            text-decoration: underline;
+        }
+        
+        #settings-save {
+            width: 100%;
+            padding: 12px;
+            background: rgba(59,130,246,0.8);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        
+        #settings-save:hover {
+            background: rgba(59,130,246,1);
+        }
     </style>
 </head>
 <body>
@@ -329,19 +496,163 @@
         </div>
     </div>
     
+    <!-- Settings Modal -->
+    <div id="settings-modal">
+        <div id="settings-content">
+            <div id="settings-header">
+                <div id="settings-title">Settings</div>
+                <button id="settings-close">&times;</button>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-section-title">Timer Durations</div>
+                <div class="settings-row">
+                    <span class="settings-label">Work (minutes)</span>
+                    <input type="number" id="work-minutes" class="settings-input" value="25" min="1" max="120">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Short Break (minutes)</span>
+                    <input type="number" id="short-break-minutes" class="settings-input" value="5" min="1" max="60">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Long Break (minutes)</span>
+                    <input type="number" id="long-break-minutes" class="settings-input" value="15" min="1" max="120">
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-section-title">Preferences</div>
+                <div class="settings-row">
+                    <span class="settings-label">Save state (cookies)</span>
+                    <label class="settings-toggle" id="cookie-toggle">
+                        <div class="toggle-switch active">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-credits">
+                    <strong>Time & Flow</strong><br>
+                    A Pomodoro timer by QQ<br><br>
+                    Built with ❤️ using vanilla JS<br>
+                    <a href="https://github.com/QQSHI13/flow" target="_blank">View on GitHub</a>
+                </div>
+            </div>
+            
+            <button id="settings-save">Save & Close</button>
+        </div>
+    </div>
+    
     <script>
-        // Config
-        const WORK_MINUTES = 25;
-        const SHORT_BREAK_MINUTES = 5;
-        const LONG_BREAK_MINUTES = 15;
+        // Settings
+        let customWorkMinutes = 25;
+        let customShortBreakMinutes = 5;
+        let customLongBreakMinutes = 15;
+        let cookiesEnabled = true;
+        
+        const settingsModal = document.getElementById('settings-modal');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsClose = document.getElementById('settings-close');
+        const settingsSave = document.getElementById('settings-save');
+        const workMinutesInput = document.getElementById('work-minutes');
+        const shortBreakMinutesInput = document.getElementById('short-break-minutes');
+        const longBreakMinutesInput = document.getElementById('long-break-minutes');
+        const cookieToggle = document.getElementById('cookie-toggle');
+        const toggleSwitch = cookieToggle.querySelector('.toggle-switch');
+        
+        function openSettings() {
+            workMinutesInput.value = customWorkMinutes;
+            shortBreakMinutesInput.value = customShortBreakMinutes;
+            longBreakMinutesInput.value = customLongBreakMinutes;
+            if (cookiesEnabled) {
+                toggleSwitch.classList.add('active');
+            } else {
+                toggleSwitch.classList.remove('active');
+            }
+            settingsModal.classList.add('active');
+        }
+        
+        function closeSettings() {
+            settingsModal.classList.remove('active');
+        }
+        
+        function saveSettings() {
+            customWorkMinutes = parseInt(workMinutesInput.value) || 25;
+            customShortBreakMinutes = parseInt(shortBreakMinutesInput.value) || 5;
+            customLongBreakMinutes = parseInt(longBreakMinutesInput.value) || 15;
+            cookiesEnabled = toggleSwitch.classList.contains('active');
+            
+            // Save to cookie
+            if (cookiesEnabled) {
+                const settings = {
+                    workMinutes: customWorkMinutes,
+                    shortBreakMinutes: customShortBreakMinutes,
+                    longBreakMinutes: customLongBreakMinutes,
+                    cookiesEnabled: cookiesEnabled
+                };
+                setCookie('flowSettings', JSON.stringify(settings), 365);
+            }
+            
+            // Update current timer if not running
+            if (!isRunning) {
+                if (mode === 'work') {
+                    timeLeft = customWorkMinutes * 60;
+                } else if (mode === 'shortBreak') {
+                    timeLeft = customShortBreakMinutes * 60;
+                } else {
+                    timeLeft = customLongBreakMinutes * 60;
+                }
+                updateDisplay();
+            }
+            
+            closeSettings();
+        }
+        
+        function loadSettings() {
+            const saved = getCookie('flowSettings');
+            if (saved) {
+                try {
+                    const settings = JSON.parse(saved);
+                    customWorkMinutes = settings.workMinutes || 25;
+                    customShortBreakMinutes = settings.shortBreakMinutes || 5;
+                    customLongBreakMinutes = settings.longBreakMinutes || 15;
+                    cookiesEnabled = settings.cookiesEnabled !== false;
+                } catch (e) {
+                    console.log('Failed to load settings:', e);
+                }
+            }
+        }
+        
+        settingsBtn.addEventListener('click', openSettings);
+        settingsClose.addEventListener('click', closeSettings);
+        settingsSave.addEventListener('click', saveSettings);
+        
+        cookieToggle.addEventListener('click', () => {
+            toggleSwitch.classList.toggle('active');
+        });
+        
+        // Close modal when clicking outside
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                closeSettings();
+            }
+        });
+        
+        // Config - use custom values
         const SESSIONS_BEFORE_LONG_BREAK = 4;
         
         // State
         let mode = 'work'; // 'work', 'shortBreak', 'longBreak'
-        let timeLeft = WORK_MINUTES * 60;
+        let timeLeft = customWorkMinutes * 60;
         let isRunning = false;
         let timerInterval = null;
         let workSessionsCompleted = 0;
+        
+        // Load settings first
+        loadSettings();
+        timeLeft = customWorkMinutes * 60;
         
         // DOM refs
         const badge = document.getElementById('badge');
@@ -362,11 +673,11 @@
         function updateDisplay() {
             let totalTime;
             if (mode === 'work') {
-                totalTime = WORK_MINUTES * 60;
+                totalTime = customWorkMinutes * 60;
             } else if (mode === 'shortBreak') {
-                totalTime = SHORT_BREAK_MINUTES * 60;
+                totalTime = customShortBreakMinutes * 60;
             } else {
-                totalTime = LONG_BREAK_MINUTES * 60;
+                totalTime = customLongBreakMinutes * 60;
             }
             
             const progress = ((totalTime - timeLeft) / totalTime) * 100;
@@ -433,15 +744,15 @@
                             workSessionsCompleted++;
                             if (workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK === 0) {
                                 mode = 'longBreak';
-                                timeLeft = LONG_BREAK_MINUTES * 60;
+                                timeLeft = customLongBreakMinutes * 60;
                             } else {
                                 mode = 'shortBreak';
-                                timeLeft = SHORT_BREAK_MINUTES * 60;
+                                timeLeft = customShortBreakMinutes * 60;
                             }
                         } else {
                             // After any break, go back to work
                             mode = 'work';
-                            timeLeft = WORK_MINUTES * 60;
+                            timeLeft = customWorkMinutes * 60;
                         }
                         // Keep timer running - don't clearInterval or set isRunning=false
                     } else {
@@ -459,11 +770,11 @@
             clearInterval(timerInterval);
             isRunning = false;
             if (mode === 'work') {
-                timeLeft = WORK_MINUTES * 60;
+                timeLeft = customWorkMinutes * 60;
             } else if (mode === 'shortBreak') {
-                timeLeft = SHORT_BREAK_MINUTES * 60;
+                timeLeft = customShortBreakMinutes * 60;
             } else {
-                timeLeft = LONG_BREAK_MINUTES * 60;
+                timeLeft = customLongBreakMinutes * 60;
             }
             saveState();
             updateDisplay();
@@ -475,13 +786,13 @@
             isRunning = false;
             if (mode === 'work') {
                 mode = 'shortBreak';
-                timeLeft = SHORT_BREAK_MINUTES * 60;
+                timeLeft = customShortBreakMinutes * 60;
             } else if (mode === 'shortBreak') {
                 mode = 'longBreak';
-                timeLeft = LONG_BREAK_MINUTES * 60;
+                timeLeft = customLongBreakMinutes * 60;
             } else {
                 mode = 'work';
-                timeLeft = WORK_MINUTES * 60;
+                timeLeft = customWorkMinutes * 60;
             }
             saveState();
             updateDisplay();
@@ -551,6 +862,7 @@
         
         // Save state to cookie
         function saveState() {
+            if (!cookiesEnabled) return;
             const state = {
                 mode: mode,
                 timeLeft: timeLeft,
@@ -586,14 +898,14 @@
                             workSessionsCompleted++;
                             if (workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK === 0) {
                                 mode = 'longBreak';
-                                timeLeft = LONG_BREAK_MINUTES * 60;
+                                timeLeft = customLongBreakMinutes * 60;
                             } else {
                                 mode = 'shortBreak';
-                                timeLeft = SHORT_BREAK_MINUTES * 60;
+                                timeLeft = customShortBreakMinutes * 60;
                             }
                         } else {
                             mode = 'work';
-                            timeLeft = WORK_MINUTES * 60;
+                            timeLeft = customWorkMinutes * 60;
                         }
                         isRunning = false; // Stop when returning after timer expired
                     } else {
@@ -617,7 +929,7 @@
         
         // Also save periodically while running
         setInterval(() => {
-            if (isRunning) saveState();
+            if (isRunning && cookiesEnabled) saveState();
         }, 10000); // Save every 10 seconds while running
         
         // Clock
@@ -643,14 +955,14 @@
                         workSessionsCompleted++;
                         if (workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK === 0) {
                             mode = 'longBreak';
-                            timeLeft = LONG_BREAK_MINUTES * 60;
+                            timeLeft = customLongBreakMinutes * 60;
                         } else {
                             mode = 'shortBreak';
-                            timeLeft = SHORT_BREAK_MINUTES * 60;
+                            timeLeft = customShortBreakMinutes * 60;
                         }
                     } else {
                         mode = 'work';
-                        timeLeft = WORK_MINUTES * 60;
+                        timeLeft = customWorkMinutes * 60;
                     }
                 } else {
                     timeLeft--;
