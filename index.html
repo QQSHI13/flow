@@ -656,29 +656,10 @@
     </div>
     
     <script>
-        // Modern 2026 Mobile Detection using UA-CH + Feature Detection
+        // Mobile Detection: User-Agent Client Hints (2026 standard)
         function detectMobile() {
-            // 1. User-Agent Client Hints (Chromium/Edge) - most reliable
-            if (navigator.userAgentData?.mobile === true) {
-                return true;
-            }
-            
-            // 2. Pointer accuracy detection (coarse = finger/touch)
-            if (window.matchMedia("(pointer: coarse)").matches) {
-                return true;
-            }
-            
-            // 3. Touch capability check
-            if (navigator.maxTouchPoints > 0) {
-                return true;
-            }
-            
-            // 4. Legacy UA sniffing fallback (look for "Mobi")
-            if (/Mobi/i.test(navigator.userAgent)) {
-                return true;
-            }
-            
-            return false;
+            // UA-CH API - returns true for phones (Chrome/Edge)
+            return navigator.userAgentData?.mobile === true;
         }
         
         // Apply mobile class on load
