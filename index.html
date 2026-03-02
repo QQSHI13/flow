@@ -472,7 +472,7 @@
             background: rgba(239, 68, 68, 0.3);
         }
         
-        /* Keyboard shortcuts in settings */
+        /* Keyboard shortcuts in settings - desktop only */
         #shortcuts-section {
             display: block;
         }
@@ -480,6 +480,17 @@
         @media (max-width: 768px) {
             #shortcuts-section {
                 display: none;
+            }
+        }
+        
+        /* Vibration toggle - mobile only */
+        #vibrate-row {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            #vibrate-row {
+                display: flex;
             }
         }
         
@@ -607,7 +618,7 @@
                         </div>
                     </label>
                 </div>
-                <div class="settings-row">
+                <div class="settings-row" id="vibrate-row">
                     <span class="settings-label">Vibrate on mode switch</span>
                     <label class="settings-toggle" id="vibrate-toggle">
                         <div class="toggle-switch active">
@@ -643,8 +654,6 @@
                     <a href="https://github.com/QQSHI13/flow" target="_blank">View on GitHub</a>
                 </div>
             </div>
-            
-            <button id="settings-save">Save & Close</button>
         </div>
     </div>
     
@@ -660,7 +669,6 @@
         const settingsModal = document.getElementById('settings-modal');
         const settingsBtn = document.getElementById('settings-btn');
         const settingsClose = document.getElementById('settings-close');
-        const settingsSave = document.getElementById('settings-save');
         const workMinutesInput = document.getElementById('work-minutes');
         const shortBreakMinutesInput = document.getElementById('short-break-minutes');
         const longBreakMinutesInput = document.getElementById('long-break-minutes');
@@ -694,6 +702,7 @@
         }
         
         function closeSettings() {
+            saveSettings();
             settingsModal.classList.remove('active');
         }
         
@@ -729,8 +738,6 @@
                 }
                 updateDisplay();
             }
-            
-            closeSettings();
         }
         
         function loadSettings() {
@@ -752,7 +759,11 @@
         
         settingsBtn.addEventListener('click', openSettings);
         settingsClose.addEventListener('click', closeSettings);
-        settingsSave.addEventListener('click', saveSettings);
+        
+        // Auto-save when inputs change
+        workMinutesInput.addEventListener('change', saveSettings);
+        shortBreakMinutesInput.addEventListener('change', saveSettings);
+        longBreakMinutesInput.addEventListener('change', saveSettings);
         
         // Reset button handler
         const settingsReset = document.getElementById('settings-reset');
@@ -792,14 +803,17 @@
         
         cookieToggle.addEventListener('click', () => {
             toggleSwitch.classList.toggle('active');
+            saveSettings();
         });
         
         soundToggle.addEventListener('click', () => {
             soundToggleSwitch.classList.toggle('active');
+            saveSettings();
         });
         
         vibrateToggle.addEventListener('click', () => {
             vibrateToggleSwitch.classList.toggle('active');
+            saveSettings();
         });
         
         // Close modal when clicking outside
