@@ -1,0 +1,681 @@
+/* ============================================
+   Flow - Pomodoro Timer Styles
+   ============================================ */
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #111213;
+    touch-action: manipulation;
+}
+
+/* Main App Container */
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Content Area */
+#content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+}
+
+/* ============================================
+   Header & Status Badge
+   ============================================ */
+
+#header {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    z-index: 10;
+}
+
+#badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 22px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: rgba(59, 130, 246, 0.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#badge.mode-work {
+    background: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+#badge.mode-short-break {
+    background: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+#badge.mode-long-break {
+    background: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Clock Widget */
+#clock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 22px;
+    font-size: 18px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 1px;
+    background: rgba(96, 96, 96, 0.36);
+    border: 1px solid rgba(105, 105, 105, 0.38);
+    box-shadow: 7px 7px 11px 0 rgba(0, 0, 0, 0.46);
+    text-shadow: 5px 5px 11px rgba(0, 0, 0, 0.64);
+    transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+    flex-shrink: 0;
+}
+
+#clock-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Settings Button */
+#settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.15s ease-out;
+}
+
+#settings-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#settings-btn:active {
+    transform: scale(0.92);
+}
+
+/* ============================================
+   Timer Ring
+   ============================================ */
+
+#ring {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin-bottom: 24px;
+}
+
+#ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+#progress {
+    transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+}
+
+#timer-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#timer-time {
+    font-size: 52px;
+    font-weight: 300;
+    color: #fff;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    letter-spacing: -0.02em;
+}
+
+#timer-status {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+/* ============================================
+   Controls
+   ============================================ */
+
+#controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.ctrl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s ease-out;
+    border: none;
+    background: none;
+}
+
+.ctrl:active {
+    transform: scale(0.88);
+}
+
+.ctrl.key-pressed {
+    animation: btnPress 0.2s ease-out;
+}
+
+@keyframes btnPress {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.85); }
+    100% { transform: scale(1); }
+}
+
+.ctrl.small {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.ctrl.small:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.ctrl.large {
+    width: 60px;
+    height: 60px;
+    background: #fff;
+    color: #1f2937;
+    box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+}
+
+.ctrl.large:active {
+    transform: scale(0.95);
+    box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   Fullscreen Mode
+   ============================================ */
+
+body.is-fullscreen #header {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+body.is-fullscreen:hover #header {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ============================================
+   Settings Modal
+   ============================================ */
+
+#settings-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+#settings-modal.active {
+    display: flex;
+}
+
+#settings-content {
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#settings-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+}
+
+#settings-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+}
+
+#settings-close:hover {
+    color: #fff;
+}
+
+.settings-section {
+    margin-bottom: 24px;
+}
+
+.settings-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.settings-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.settings-input {
+    width: 70px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.settings-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.toggle-switch {
+    width: 44px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.toggle-switch.active {
+    background: rgba(59, 130, 246, 0.8);
+}
+
+.toggle-knob {
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s;
+}
+
+.toggle-switch.active .toggle-knob {
+    transform: translateX(20px);
+}
+
+.settings-reset-btn {
+    width: 100%;
+    padding: 10px;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 8px;
+    color: rgba(239, 68, 68, 0.9);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-reset-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+.settings-credits {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.6;
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-credits a {
+    color: rgba(59, 130, 246, 0.8);
+    text-decoration: none;
+}
+
+.settings-credits a:hover {
+    text-decoration: underline;
+}
+
+/* Keyboard Shortcuts (desktop only) */
+#shortcuts-section {
+    display: block;
+}
+
+body.is-mobile #shortcuts-section {
+    display: none;
+}
+
+.settings-shortcut-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 16px;
+}
+
+.settings-shortcut-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.settings-shortcut-desc {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: right;
+    line-height: 1.5;
+}
+
+/* ============================================
+   Responsive Variables
+   ============================================ */
+
+:root {
+    --ring-size: min(60vw, 60vh, 520px);
+    --timer-font: min(18vw, 18vh, 120px);
+    --btn-large: min(16vw, 16vh, 120px);
+    --btn-small: min(12vw, 12vh, 88px);
+    --badge-font: min(5vw, 5vh, 22px);
+}
+
+/* ============================================
+   Desktop Layout (769px+)
+   ============================================ */
+
+@media (min-width: 769px) {
+    #content {
+        flex-direction: row;
+        justify-content: center;
+        gap: 5vw;
+        padding: 40px;
+    }
+
+    #timer-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #controls-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+    }
+
+    #clock-row {
+        gap: 12px;
+    }
+
+    #settings-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 28px;
+    }
+
+    #settings-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    #clock {
+        height: 56px;
+        padding: 0 24px;
+        font-size: 24px;
+        border-radius: 28px;
+    }
+
+    #badge {
+        font-size: var(--badge-font);
+        padding: 8px 24px;
+        margin-bottom: 24px;
+    }
+
+    #ring {
+        width: var(--ring-size);
+        height: var(--ring-size);
+        margin-bottom: 0;
+    }
+
+    #timer-time {
+        font-size: var(--timer-font);
+    }
+
+    #timer-status {
+        font-size: min(2.5vw, 2.5vh, 16px);
+        margin-top: 8px;
+    }
+
+    .ctrl.large {
+        width: var(--btn-large);
+        height: var(--btn-large);
+    }
+
+    .ctrl.small {
+        width: var(--btn-small);
+        height: var(--btn-small);
+    }
+
+    #controls {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+
+/* ============================================
+   Mobile Layout (768px and below)
+   ============================================ */
+
+@media (max-width: 768px) {
+    #header {
+        top: 16px;
+        left: 16px;
+        gap: 6px;
+    }
+
+    #settings-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+    }
+
+    #badge {
+        font-size: 11px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 18px;
+    }
+
+    #clock {
+        font-size: 16px;
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 18px;
+    }
+
+    #content {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding-top: 80px;
+    }
+
+    #timer-section {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #controls-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Mobile-specific body class (applied via JS) */
+body.is-mobile {
+    --ring-size: min(85vw, 420px);
+    --timer-font: min(24vw, 96px);
+    --btn-large: min(20vw, 90px);
+    --btn-small: min(16vw, 72px);
+    --badge-font: 16px;
+}
+
+body.is-mobile #header {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    gap: 8px;
+}
+
+body.is-mobile #clock {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 14px;
+}
+
+body.is-mobile #badge {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 11px;
+}
+
+body.is-mobile #clock-row {
+    gap: 6px;
+}
+
+body.is-mobile #ring {
+    width: var(--ring-size);
+    height: var(--ring-size);
+    margin-bottom: 24px;
+}
+
+body.is-mobile #timer-time {
+    font-size: var(--timer-font);
+}
+
+body.is-mobile .ctrl.large {
+    width: var(--btn-large);
+    height: var(--btn-large);
+}
+
+body.is-mobile .ctrl.small {
+    width: var(--btn-small);
+    height: var(--btn-small);
+}
+
+body.is-mobile #controls {
+    gap: 16px;
+}
+
+body.is-mobile #timer-status {
+    font-size: 11px;
+}
