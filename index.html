@@ -32,7 +32,7 @@
             z-index: 10;
         }
 
-        /* Status Badge */
+        /* Status Badge with mode colors */
         #badge {
             display: flex;
             align-items: center;
@@ -49,6 +49,47 @@
             white-space: nowrap;
             flex-shrink: 0;
             box-sizing: border-box;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        #badge.mode-work {
+            background: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        #badge.mode-short-break {
+            background: rgba(34, 197, 94, 0.4);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+        
+        #badge.mode-long-break {
+            background: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Smooth transitions for mode switches */
+        #timer-section {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        #ring {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        #progress {
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+        }
+        
+        /* Fullscreen mode styles */
+        body.is-fullscreen #header {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        body.is-fullscreen:hover #header {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         /* Minimalist Clock */
@@ -668,6 +709,14 @@
                     <span class="settings-shortcut-key">R</span>
                     <span class="settings-shortcut-desc">Reset timer (when running)<br>Switch mode (when paused)</span>
                 </div>
+                <div class="settings-shortcut-row">
+                    <span class="settings-shortcut-key">F</span>
+                    <span class="settings-shortcut-desc">Toggle fullscreen</span>
+                </div>
+                <div class="settings-shortcut-row">
+                    <span class="settings-shortcut-key">Double-click</span>
+                    <span class="settings-shortcut-desc">Toggle fullscreen</span>
+                </div>
             </div>
 
             <div class="settings-section">
@@ -930,10 +979,13 @@
                 } else {
                     badge.textContent = 'Deep Work';
                 }
+                badge.className = 'mode-work';
             } else if (mode === 'shortBreak') {
                 badge.textContent = 'Short Rest';
+                badge.className = 'mode-short-break';
             } else {
                 badge.textContent = 'Long Rest';
+                badge.className = 'mode-long-break';
             }
 
             progressCircle.style.strokeDashoffset = offset;
@@ -1154,6 +1206,39 @@
                     animateButton(modeBtn);
                 }
                 return;
+            }
+
+            // F = Toggle fullscreen
+            if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreen();
+                return;
+            }
+        });
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Fullscreen not supported');
+                });
+                document.body.classList.add('is-fullscreen');
+            } else {
+                document.exitFullscreen();
+                document.body.classList.remove('is-fullscreen');
+            }
+        }
+
+        // Double-click to toggle fullscreen
+        document.addEventListener('dblclick', (e) => {
+            // Don't trigger if clicking on buttons
+            if (e.target.closest('.ctrl') || e.target.closest('#settings-btn')) return;
+            toggleFullscreen();
+        });
+
+        // Exit fullscreen handler
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('is-fullscreen');
             }
         });
 
