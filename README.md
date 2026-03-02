@@ -29,4 +29,6 @@ This is a static site — just push to GitHub and enable Pages on the root folde
 
 Built with ❤️ by QQ with help from Nova ☄️
 
+## Star History
 
+[![Star History Chart](https://api.star-history.com/svg?repos=QQSHI13/flow&type=date&legend=top-left)](https://www.star-history.com/#QQSHI13/flow&type=date&legend=top-left)
