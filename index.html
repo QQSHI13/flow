@@ -17,13 +17,6 @@
         html, body { height: 100%; width: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #111213; touch-action: manipulation; }
         #app { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
-        <!-- Logo Icon in header -->
-        #logo-icon {
-            width: 32px;
-            height: 32px;
-            margin-bottom: 4px;
-        }
-        
         /* Content */
         #content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
         
@@ -241,9 +234,15 @@
                 --badge-font: 16px;
             }
             
-            /* Status and clock on same line for mobile */
-            #app {
+            /* Center the header on mobile */
+            #header {
                 position: relative;
+                top: auto;
+                left: auto;
+                align-items: center;
+                width: 100%;
+                padding: 16px 0;
+                gap: 12px;
             }
             
             #clock {
@@ -251,10 +250,10 @@
                 align-items: center;
                 justify-content: center;
                 height: 36px;
-                padding: 0;
+                padding: 0 16px;
                 border-radius: 18px;
                 font-size: 14px;
-                width: 80px;
+                width: auto;
             }
             
             #badge {
@@ -262,23 +261,28 @@
                 align-items: center;
                 justify-content: center;
                 height: 36px;
-                padding: 0 12px;
+                padding: 0 16px;
                 border-radius: 18px;
                 font-size: 11px;
                 margin-bottom: 0;
             }
             
             #clock-row {
-                gap: 6px;
+                gap: 8px;
+                justify-content: center;
             }
             
             #timer-section {
                 width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
             
             #content {
                 flex-direction: column;
-                justify-content: center;
+                justify-content: flex-start;
+                padding-top: 20px;
             }
             
             #ring { 
