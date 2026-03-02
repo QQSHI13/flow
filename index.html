@@ -707,7 +707,15 @@
                     </label>
                 </div>
                 <div class="settings-row" id="vibrate-row">
-                    <span class="settings-label">Vibrate on mode switch</span>
+                <div class="settings-row">
+                    <span class="settings-label">wake lock</span>
+                    <label class="settings-toggle" id="wakelock-toggle">
+                        <div class="toggle-switch active">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </label>
+                </div>
+                    <span class="settings-label">vibrate</span>
                     <label class="settings-toggle" id="vibrate-toggle">
                         <div class="toggle-switch active">
                             <div class="toggle-knob"></div>
@@ -769,6 +777,7 @@
         let cookiesEnabled = true;
         let soundEnabled = true;
         let vibrateEnabled = true;
+        let wakeLockEnabled = true;
 
         const settingsModal = document.getElementById('settings-modal');
         const settingsBtn = document.getElementById('settings-btn');
@@ -782,6 +791,8 @@
         const soundToggleSwitch = soundToggle.querySelector('.toggle-switch');
         const vibrateToggle = document.getElementById('vibrate-toggle');
         const vibrateToggleSwitch = vibrateToggle.querySelector('.toggle-switch');
+        const wakeLockToggle = document.getElementById('wakelock-toggle');
+        const wakeLockToggleSwitch = wakeLockToggle.querySelector('.toggle-switch');
 
         function openSettings() {
             workMinutesInput.value = customWorkMinutes;
@@ -802,6 +813,11 @@
             } else {
                 vibrateToggleSwitch.classList.remove('active');
             }
+            if (wakeLockEnabled) {
+                wakeLockToggleSwitch.classList.add('active');
+            } else {
+                wakeLockToggleSwitch.classList.remove('active');
+            }
             settingsModal.classList.add('active');
         }
 
@@ -817,6 +833,7 @@
             cookiesEnabled = toggleSwitch.classList.contains('active');
             soundEnabled = soundToggleSwitch.classList.contains('active');
             vibrateEnabled = vibrateToggleSwitch.classList.contains('active');
+            wakeLockEnabled = wakeLockToggleSwitch.classList.contains('active');
 
             // Save to cookie
             if (cookiesEnabled) {
@@ -826,7 +843,9 @@
                     longBreakMinutes: customLongBreakMinutes,
                     cookiesEnabled: cookiesEnabled,
                     soundEnabled: soundEnabled,
-                    vibrateEnabled: vibrateEnabled
+                    vibrateEnabled: vibrateEnabled,
+                    wakeLockEnabled: wakeLockEnabled
+                };
                 };
                 setCookie('flowSettings', JSON.stringify(settings), 365);
             }
@@ -855,6 +874,7 @@
                     cookiesEnabled = settings.cookiesEnabled !== false;
                     soundEnabled = settings.soundEnabled !== false;
                     vibrateEnabled = settings.vibrateEnabled !== false;
+                    wakeLockEnabled = settings.wakeLockEnabled !== false;
                 } catch (e) {
                     console.log('Failed to load settings:', e);
                 }
@@ -880,6 +900,7 @@
                 cookiesEnabled = true;
                 soundEnabled = true;
                 vibrateEnabled = true;
+                wakeLockEnabled = true;
 
                 // Clear cookies
                 setCookie('flowSettings', '', -1);
@@ -899,6 +920,7 @@
                 toggleSwitch.classList.add('active');
                 soundToggleSwitch.classList.add('active');
                 vibrateToggleSwitch.classList.add('active');
+                wakeLockToggleSwitch.classList.add('active');
                 updateDisplay();
 
                 alert('Settings reset to defaults!');
@@ -948,6 +970,11 @@
 
         vibrateToggle.addEventListener('click', () => {
             vibrateToggleSwitch.classList.toggle('active');
+            saveSettings();
+        });
+
+        wakeLockToggle.addEventListener('click', () => {
+            wakeLockToggleSwitch.classList.toggle('active');
             saveSettings();
         });
 
@@ -1105,6 +1132,7 @@
         let wakeLock = null;
 
         async function requestWakeLock() {
+            if (!wakeLockEnabled) return;
             if ('wakeLock' in navigator) {
                 try {
                     wakeLock = await navigator.wakeLock.request('screen');
