@@ -4,10 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Time & Flow</title>
+    
+    <!-- Favicon - Elegant Clock SVG -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23111213' stroke='%23fff' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23fff'/%3E%3Cline x1='50' y1='50' x2='50' y2='20' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='70' y2='50' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23111213' rx='40'/%3E%3Ccircle cx='90' cy='90' r='70' fill='none' stroke='%23fff' stroke-width='8'/%3E%3Ccircle cx='90' cy='90' r='8' fill='%23fff'/%3E%3Cline x1='90' y1='90' x2='90' y2='40' stroke='%23fff' stroke-width='8' stroke-linecap='round'/%3E%3Cline x1='90' y1='90' x2='120' y2='90' stroke='%23fff' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVGltZSAmIEZsb3ciLCJzaG9ydF9uYW1lIjoiVGltZSAmIEZsb3ciLCJkZXNjcmlwdGlvbiI6IkEgc2ltcGxlIFBvbW9kb3JvIHRpbWVyIHdpdGggZmxvdyBzdGF0ZSIsInRoZW1lX2NvbG9yIjoiIzExMTIxMyIsImJhY2tncm91bmRfY29sb3IiOiIjMTExMjEzIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxOTIgMTkyJyUzRSUzQ3JlY3Qgd2lkdGg9JzE5MicgaGVpZ2h0PScxOTInIGZpbGw9JyMxMTEyMTMnIHJ4PSc0MCclMkYlM0UlM0NjaXJjbGUgY3g9Jzk2JyBjeT0nOTYnIHI9JzcwJyBmaWxsPSdub25lJyBzdHJva2U9JyNmZmYnIHN0cm9rZS13aWR0aD0nOCclMkYlM0UlM0NjY2lyY2xlIGN4PSc5NicgY3k9Jzk2JyByPSc4JyBmaWxsPScjZmZmJyUyRiUzRSUzQ2xpbmUgeDE9Jzk2JyB5MT0nOTYnIHgyPSc5NicgeTI9JzQwJyBzdHJva2U9JyNmZmYnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyUyRiUzRSUzQ2xpbmUgeDE9Jzk2JyB5MT0nOTYnIHgyPScxMjAnIHkyPSc5Nicgc3Ryb2tlPScjZmZmJyBzdHJva2Utd2lkdGg9JzYnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCclMkYlM0UlM0MlMkZzdmclM0UiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100%; width: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #111213; touch-action: manipulation; }
         #app { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
+        
+        <!-- Logo Icon in header -->
+        #logo-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 4px;
+        }
         
         /* Content */
         #content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
@@ -528,6 +543,18 @@
 <body>
     <div id="app">
         <div id="header">
+            <!-- Elegant Clock Logo -->
+            <svg id="logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.9)" stroke-width="4"/>
+                <circle cx="50" cy="50" r="4" fill="rgba(255,255,255,0.9)"/>
+                <line x1="50" y1="50" x2="50" y2="20" stroke="rgba(255,255,255,0.9)" stroke-width="5" stroke-linecap="round"/>
+                <line x1="50" y1="50" x2="75" y2="50" stroke="rgba(255,255,255,0.7)" stroke-width="4" stroke-linecap="round"/>
+                <!-- Hour markers -->
+                <line x1="50" y1="12" x2="50" y2="18" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                <line x1="50" y1="82" x2="50" y2="88" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                <line x1="12" y1="50" x2="18" y2="50" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                <line x1="82" y1="50" x2="88" y2="50" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+            </svg>
             <div id="badge">Deep Work</div>
             <div id="clock-row">
                 <div id="clock">00:00</div>
