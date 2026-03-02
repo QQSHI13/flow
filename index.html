@@ -573,15 +573,6 @@
             display: none;
         }
 
-        /* Vibration toggle - mobile only */
-        #vibrate-row {
-            display: none;
-        }
-
-        body.is-mobile #vibrate-row {
-            display: flex;
-        }
-
         .settings-shortcut-row {
             display: flex;
             justify-content: space-between;
@@ -706,17 +697,9 @@
                         </div>
                     </label>
                 </div>
-                <div class="settings-row" id="vibrate-row">
                 <div class="settings-row">
                     <span class="settings-label">wake lock</span>
                     <label class="settings-toggle" id="wakelock-toggle">
-                        <div class="toggle-switch active">
-                            <div class="toggle-knob"></div>
-                        </div>
-                    </label>
-                </div>
-                    <span class="settings-label">vibrate</span>
-                    <label class="settings-toggle" id="vibrate-toggle">
                         <div class="toggle-switch active">
                             <div class="toggle-knob"></div>
                         </div>
@@ -776,7 +759,6 @@
         let customLongBreakMinutes = 15;
         let cookiesEnabled = true;
         let soundEnabled = true;
-        let vibrateEnabled = true;
         let wakeLockEnabled = true;
 
         const settingsModal = document.getElementById('settings-modal');
@@ -789,8 +771,6 @@
         const toggleSwitch = cookieToggle.querySelector('.toggle-switch');
         const soundToggle = document.getElementById('sound-toggle');
         const soundToggleSwitch = soundToggle.querySelector('.toggle-switch');
-        const vibrateToggle = document.getElementById('vibrate-toggle');
-        const vibrateToggleSwitch = vibrateToggle.querySelector('.toggle-switch');
         const wakeLockToggle = document.getElementById('wakelock-toggle');
         const wakeLockToggleSwitch = wakeLockToggle.querySelector('.toggle-switch');
 
@@ -807,11 +787,6 @@
                 soundToggleSwitch.classList.add('active');
             } else {
                 soundToggleSwitch.classList.remove('active');
-            }
-            if (vibrateEnabled) {
-                vibrateToggleSwitch.classList.add('active');
-            } else {
-                vibrateToggleSwitch.classList.remove('active');
             }
             if (wakeLockEnabled) {
                 wakeLockToggleSwitch.classList.add('active');
@@ -832,7 +807,6 @@
             customLongBreakMinutes = parseInt(longBreakMinutesInput.value) || 15;
             cookiesEnabled = toggleSwitch.classList.contains('active');
             soundEnabled = soundToggleSwitch.classList.contains('active');
-            vibrateEnabled = vibrateToggleSwitch.classList.contains('active');
             wakeLockEnabled = wakeLockToggleSwitch.classList.contains('active');
 
             // Save to cookie
@@ -843,7 +817,6 @@
                     longBreakMinutes: customLongBreakMinutes,
                     cookiesEnabled: cookiesEnabled,
                     soundEnabled: soundEnabled,
-                    vibrateEnabled: vibrateEnabled,
                     wakeLockEnabled: wakeLockEnabled
                 };
                 setCookie('flowSettings', JSON.stringify(settings), 365);
@@ -872,7 +845,6 @@
                     customLongBreakMinutes = settings.longBreakMinutes || 15;
                     cookiesEnabled = settings.cookiesEnabled !== false;
                     soundEnabled = settings.soundEnabled !== false;
-                    vibrateEnabled = settings.vibrateEnabled !== false;
                     wakeLockEnabled = settings.wakeLockEnabled !== false;
                 } catch (e) {
                     console.log('Failed to load settings:', e);
@@ -898,7 +870,6 @@
                 customLongBreakMinutes = 15;
                 cookiesEnabled = true;
                 soundEnabled = true;
-                vibrateEnabled = true;
                 wakeLockEnabled = true;
 
                 // Clear cookies
@@ -918,7 +889,6 @@
                 longBreakMinutesInput.value = customLongBreakMinutes;
                 toggleSwitch.classList.add('active');
                 soundToggleSwitch.classList.add('active');
-                vibrateToggleSwitch.classList.add('active');
                 wakeLockToggleSwitch.classList.add('active');
                 updateDisplay();
 
@@ -936,8 +906,7 @@
                     shortBreakMinutes: customShortBreakMinutes,
                     longBreakMinutes: customLongBreakMinutes,
                     cookiesEnabled: cookiesEnabled,
-                    soundEnabled: soundEnabled,
-                    vibrateEnabled: vibrateEnabled
+                    soundEnabled: soundEnabled
                 },
                 stats: {
                     totalSessionsCompleted: workSessionsCompleted,
@@ -964,11 +933,6 @@
 
         soundToggle.addEventListener('click', () => {
             soundToggleSwitch.classList.toggle('active');
-            saveSettings();
-        });
-
-        vibrateToggle.addEventListener('click', () => {
-            vibrateToggleSwitch.classList.toggle('active');
             saveSettings();
         });
 
@@ -1081,11 +1045,6 @@
         // Sound effect for mode switch
         function playModeSwitchSound(soundType = 'default') {
             if (!soundEnabled) return;
-
-            // Vibrate on mobile (200ms pattern)
-            if (vibrateEnabled && 'vibrate' in navigator) {
-                navigator.vibrate([200, 100, 200]);
-            }
 
             const ctx = getAudioContext();
             const oscillator = ctx.createOscillator();
@@ -1296,15 +1255,6 @@
                 document.body.classList.remove('is-fullscreen');
             }
         }
-
-        // Double-click to toggle fullscreen (desktop only)
-        document.addEventListener('dblclick', (e) => {
-            // Only on desktop
-            if (document.body.classList.contains('is-mobile')) return;
-            // Don't trigger if clicking on buttons
-            if (e.target.closest('.ctrl') || e.target.closest('#settings-btn')) return;
-            toggleFullscreen();
-        });
 
         // Double-tap to toggle fullscreen (mobile only)
         let lastTouchTime = 0;
