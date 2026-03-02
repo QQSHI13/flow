@@ -547,6 +547,23 @@
             background: rgba(239, 68, 68, 0.3);
         }
 
+        .settings-export-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 8px;
+            color: rgba(59, 130, 246, 0.9);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .settings-export-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
         /* Keyboard shortcuts in settings - desktop only */
         #shortcuts-section {
             display: block;
@@ -717,6 +734,7 @@
 
             <div class="settings-section">
                 <div class="settings-section-title">Data</div>
+                <button id="settings-export" class="settings-export-btn">Export Sessions (JSON)</button>
                 <button id="settings-reset" class="settings-reset-btn">Reset All Settings</button>
             </div>
 
@@ -885,6 +903,37 @@
 
                 alert('Settings reset to defaults!');
             }
+        });
+
+        // Export button handler
+        const settingsExport = document.getElementById('settings-export');
+        settingsExport.addEventListener('click', () => {
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                settings: {
+                    workMinutes: customWorkMinutes,
+                    shortBreakMinutes: customShortBreakMinutes,
+                    longBreakMinutes: customLongBreakMinutes,
+                    cookiesEnabled: cookiesEnabled,
+                    soundEnabled: soundEnabled,
+                    vibrateEnabled: vibrateEnabled
+                },
+                stats: {
+                    totalSessionsCompleted: workSessionsCompleted,
+                    currentMode: mode,
+                    currentTimeLeft: timeLeft
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `time-flow-sessions-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         });
 
         cookieToggle.addEventListener('click', () => {
