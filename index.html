@@ -547,23 +547,6 @@
             background: rgba(239, 68, 68, 0.3);
         }
 
-        .settings-export-btn {
-            width: 100%;
-            padding: 10px;
-            background: rgba(59, 130, 246, 0.2);
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            border-radius: 8px;
-            color: rgba(59, 130, 246, 0.9);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 10px;
-        }
-
-        .settings-export-btn:hover {
-            background: rgba(59, 130, 246, 0.3);
-        }
-
         /* Keyboard shortcuts in settings - desktop only */
         #shortcuts-section {
             display: block;
@@ -725,7 +708,6 @@
 
             <div class="settings-section">
                 <div class="settings-section-title">Data</div>
-                <button id="settings-export" class="settings-export-btn">Export Sessions (JSON)</button>
                 <button id="settings-reset" class="settings-reset-btn">Reset All Settings</button>
             </div>
 
@@ -894,36 +876,6 @@
 
                 alert('Settings reset to defaults!');
             }
-        });
-
-        // Export button handler
-        const settingsExport = document.getElementById('settings-export');
-        settingsExport.addEventListener('click', () => {
-            const exportData = {
-                exportDate: new Date().toISOString(),
-                settings: {
-                    workMinutes: customWorkMinutes,
-                    shortBreakMinutes: customShortBreakMinutes,
-                    longBreakMinutes: customLongBreakMinutes,
-                    cookiesEnabled: cookiesEnabled,
-                    soundEnabled: soundEnabled
-                },
-                stats: {
-                    totalSessionsCompleted: workSessionsCompleted,
-                    currentMode: mode,
-                    currentTimeLeft: timeLeft
-                }
-            };
-
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `time-flow-sessions-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         });
 
         cookieToggle.addEventListener('click', () => {
@@ -1258,21 +1210,31 @@
 
         // Double-tap to toggle fullscreen (mobile only)
         let lastTouchTime = 0;
+        let lastTouchTarget = null;
         document.addEventListener('touchend', (e) => {
             // Only on mobile
             if (!document.body.classList.contains('is-mobile')) return;
-            // Don't trigger if touching buttons
-            if (e.target.closest('.ctrl') || e.target.closest('#settings-btn')) return;
             
             const currentTime = new Date().getTime();
             const tapGap = currentTime - lastTouchTime;
+            const isSameTarget = e.target === lastTouchTarget;
             
-            if (tapGap < 300 && tapGap > 0) {
-                // Double tap detected
-                toggleFullscreen();
+            // Don't trigger if touching buttons/controls
+            if (e.target.closest('.ctrl') || e.target.closest('#settings-btn') || e.target.closest('#settings-modal')) {
+                lastTouchTime = 0;
+                return;
             }
             
-            lastTouchTime = currentTime;
+            if (tapGap < 350 && tapGap > 50 && isSameTarget) {
+                // Double tap detected
+                e.preventDefault();
+                toggleFullscreen();
+                lastTouchTime = 0;
+                lastTouchTarget = null;
+            } else {
+                lastTouchTime = currentTime;
+                lastTouchTarget = e.target;
+            }
         });
 
         // Exit fullscreen handler
