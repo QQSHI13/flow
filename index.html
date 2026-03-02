@@ -471,6 +471,47 @@
         .settings-reset-btn:hover {
             background: rgba(239, 68, 68, 0.3);
         }
+        
+        /* Keyboard shortcuts in settings */
+        #shortcuts-section {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            #shortcuts-section {
+                display: none;
+            }
+        }
+        
+        .settings-shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 16px;
+        }
+        
+        .settings-shortcut-key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            font-family: ui-monospace, SFMono-Regular, monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .settings-shortcut-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            text-align: right;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -573,6 +614,18 @@
                             <div class="toggle-knob"></div>
                         </div>
                     </label>
+                </div>
+            </div>
+            
+            <div class="settings-section" id="shortcuts-section">
+                <div class="settings-section-title">Keyboard Shortcuts</div>
+                <div class="settings-shortcut-row">
+                    <span class="settings-shortcut-key">Space</span>
+                    <span class="settings-shortcut-desc">Play / Pause timer</span>
+                </div>
+                <div class="settings-shortcut-row">
+                    <span class="settings-shortcut-key">R</span>
+                    <span class="settings-shortcut-desc">Reset timer (when running)<br>Switch mode (when paused)</span>
                 </div>
             </div>
             
@@ -912,25 +965,10 @@
                 isRunning = false;
                 saveState();
                 releaseWakeLock(); // Release wake lock when paused
-                // Exit fullscreen when paused
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().catch(err => console.log('Exit fullscreen failed'));
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
             } else {
                 isRunning = true;
                 saveState();
                 requestWakeLock(); // Request wake lock when starting
-                // Enter fullscreen when started (only on desktop)
-                if (window.innerWidth > 768) {
-                    const elem = document.documentElement;
-                    if (elem.requestFullscreen) {
-                        elem.requestFullscreen().catch(err => console.log('Fullscreen not allowed'));
-                    } else if (elem.webkitRequestFullscreen) {
-                        elem.webkitRequestFullscreen();
-                    }
-                }
                 timerInterval = setInterval(() => {
                     if (timeLeft <= 1) {
                         // Determine sound type before switching mode
