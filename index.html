@@ -680,14 +680,6 @@
                         </div>
                     </label>
                 </div>
-                <div class="settings-row">
-                    <span class="settings-label">wake lock</span>
-                    <label class="settings-toggle" id="wakelock-toggle">
-                        <div class="toggle-switch active">
-                            <div class="toggle-knob"></div>
-                        </div>
-                    </label>
-                </div>
             </div>
 
             <div class="settings-section" id="shortcuts-section">
@@ -741,7 +733,6 @@
         let customLongBreakMinutes = 15;
         let cookiesEnabled = true;
         let soundEnabled = true;
-        let wakeLockEnabled = true;
 
         const settingsModal = document.getElementById('settings-modal');
         const settingsBtn = document.getElementById('settings-btn');
@@ -753,8 +744,6 @@
         const toggleSwitch = cookieToggle.querySelector('.toggle-switch');
         const soundToggle = document.getElementById('sound-toggle');
         const soundToggleSwitch = soundToggle.querySelector('.toggle-switch');
-        const wakeLockToggle = document.getElementById('wakelock-toggle');
-        const wakeLockToggleSwitch = wakeLockToggle.querySelector('.toggle-switch');
 
         function openSettings() {
             workMinutesInput.value = customWorkMinutes;
@@ -770,11 +759,6 @@
             } else {
                 soundToggleSwitch.classList.remove('active');
             }
-            if (wakeLockEnabled) {
-                wakeLockToggleSwitch.classList.add('active');
-            } else {
-                wakeLockToggleSwitch.classList.remove('active');
-            }
             settingsModal.classList.add('active');
         }
 
@@ -789,7 +773,6 @@
             customLongBreakMinutes = parseInt(longBreakMinutesInput.value) || 15;
             cookiesEnabled = toggleSwitch.classList.contains('active');
             soundEnabled = soundToggleSwitch.classList.contains('active');
-            wakeLockEnabled = wakeLockToggleSwitch.classList.contains('active');
 
             // Save to cookie
             if (cookiesEnabled) {
@@ -798,8 +781,7 @@
                     shortBreakMinutes: customShortBreakMinutes,
                     longBreakMinutes: customLongBreakMinutes,
                     cookiesEnabled: cookiesEnabled,
-                    soundEnabled: soundEnabled,
-                    wakeLockEnabled: wakeLockEnabled
+                    soundEnabled: soundEnabled
                 };
                 setCookie('flowSettings', JSON.stringify(settings), 365);
             }
@@ -827,7 +809,6 @@
                     customLongBreakMinutes = settings.longBreakMinutes || 15;
                     cookiesEnabled = settings.cookiesEnabled !== false;
                     soundEnabled = settings.soundEnabled !== false;
-                    wakeLockEnabled = settings.wakeLockEnabled !== false;
                 } catch (e) {
                     console.log('Failed to load settings:', e);
                 }
@@ -852,7 +833,6 @@
                 customLongBreakMinutes = 15;
                 cookiesEnabled = true;
                 soundEnabled = true;
-                wakeLockEnabled = true;
 
                 // Clear cookies
                 setCookie('flowSettings', '', -1);
@@ -871,7 +851,6 @@
                 longBreakMinutesInput.value = customLongBreakMinutes;
                 toggleSwitch.classList.add('active');
                 soundToggleSwitch.classList.add('active');
-                wakeLockToggleSwitch.classList.add('active');
                 updateDisplay();
 
                 alert('Settings reset to defaults!');
@@ -885,11 +864,6 @@
 
         soundToggle.addEventListener('click', () => {
             soundToggleSwitch.classList.toggle('active');
-            saveSettings();
-        });
-
-        wakeLockToggle.addEventListener('click', () => {
-            wakeLockToggleSwitch.classList.toggle('active');
             saveSettings();
         });
 
@@ -1042,7 +1016,6 @@
         let wakeLock = null;
 
         async function requestWakeLock() {
-            if (!wakeLockEnabled) return;
             if ('wakeLock' in navigator) {
                 try {
                     wakeLock = await navigator.wakeLock.request('screen');
