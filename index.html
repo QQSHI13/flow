@@ -1268,13 +1268,23 @@
             }
         }
 
-        // Double-click to toggle fullscreen (mobile only)
-        document.addEventListener('dblclick', (e) => {
+        // Double-tap to toggle fullscreen (mobile only)
+        let lastTouchTime = 0;
+        document.addEventListener('touchend', (e) => {
             // Only on mobile
             if (!document.body.classList.contains('is-mobile')) return;
-            // Don't trigger if clicking on buttons
+            // Don't trigger if touching buttons
             if (e.target.closest('.ctrl') || e.target.closest('#settings-btn')) return;
-            toggleFullscreen();
+            
+            const currentTime = new Date().getTime();
+            const tapGap = currentTime - lastTouchTime;
+            
+            if (tapGap < 300 && tapGap > 0) {
+                // Double tap detected
+                toggleFullscreen();
+            }
+            
+            lastTouchTime = currentTime;
         });
 
         // Exit fullscreen handler
