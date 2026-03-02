@@ -1022,11 +1022,6 @@
 
             oscillator.connect(gainNode);
             gainNode.connect(ctx.destination);
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(ctx.destination);
 
             // Different sounds for different events
             if (soundType === 'workEnd') {
