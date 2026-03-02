@@ -724,12 +724,10 @@
     </div>
 
     <script>
-        // Mobile Detection: UA-CH API with screen size fallback
+        // Mobile Detection: User-Agent Client Hints (2026 standard)
         function detectMobile() {
-            // Try UA-CH API first (Chrome/Edge)
-            if (navigator.userAgentData?.mobile === true) return true;
-            // Fallback: check screen width (phones are < 768px)
-            return window.innerWidth < 768 || screen.width < 768;
+            // UA-CH API - returns true for phones (Chrome/Edge)
+            return navigator.userAgentData?.mobile === true;
         }
 
         // Apply mobile class on load
