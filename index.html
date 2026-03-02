@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Time & Flow</title>
-    
+
     <!-- Favicon - Elegant Clock SVG -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23111213' stroke='%23fff' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23fff'/%3E%3Cline x1='50' y1='50' x2='50' y2='20' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='70' y2='50' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23111213' rx='40'/%3E%3Ccircle cx='90' cy='90' r='70' fill='none' stroke='%23fff' stroke-width='8'/%3E%3Ccircle cx='90' cy='90' r='8' fill='%23fff'/%3E%3Cline x1='90' y1='90' x2='90' y2='40' stroke='%23fff' stroke-width='8' stroke-linecap='round'/%3E%3Cline x1='90' y1='90' x2='120' y2='90' stroke='%23fff' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
-    
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVGltZSAmIEZsb3ciLCJzaG9ydF9uYW1lIjoiVGltZSAmIEZsb3ciLCJkZXNjcmlwdGlvbiI6IkEgc2ltcGxlIFBvbW9kb3JvIHRpbWVyIHdpdGggZmxvdyBzdGF0ZSIsInRoZW1lX2NvbG9yIjoiIzExMTIxMyIsImJhY2tncm91bmRfY29sb3IiOiIjMTExMjEzIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxOTIgMTkyJyUzRSUzQ3JlY3Qgd2lkdGg9JzE5MicgaGVpZ2h0PScxOTInIGZpbGw9JyMxMTEyMTMnIHJ4PSc0MCclMkYlM0UlM0NjaXJjbGUgY3g9Jzk2JyBjeT0nOTYnIHI9JzcwJyBmaWxsPSdub25lJyBzdHJva2U9JyNmZmYnIHN0cm9rZS13aWR0aD0nOCclMkYlM0UlM0NjY2lyY2xlIGN4PSc5NicgY3k9Jzk2JyByPSc4JyBmaWxsPScjZmZmJyUyRiUzRSUzQ2xpbmUgeDE9Jzk2JyB5MT0nOTYnIHgyPSc5NicgeTI9JzQwJyBzdHJva2U9JyNmZmYnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyUyRiUzRSUzQ2xpbmUgeDE9Jzk2JyB5MT0nOTYnIHgyPScxMjAnIHkyPSc5Nicgc3Ryb2tlPScjZmZmJyBzdHJva2Utd2lkdGg9JzYnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCclMkYlM0UlM0MlMkZzdmclM0UiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
-    
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100%; width: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #111213; touch-action: manipulation; }
         #app { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
-        
+
         /* Content */
         #content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
-        
+
         /* Header with status and clock widget on top left - stacked vertically */
         #header {
             position: absolute;
@@ -31,26 +31,26 @@
             gap: 8px;
             z-index: 10;
         }
-        
+
         /* Status Badge */
-        #badge { 
+        #badge {
             display: flex;
             align-items: center;
             justify-content: center;
             height: 44px;
-            padding: 0 16px; 
-            border-radius: 22px; 
-            font-size: 12px; 
-            font-weight: 500; 
-            color: rgba(255,255,255,0.9); 
-            text-transform: uppercase; 
-            letter-spacing: 0.1em; 
+            padding: 0 16px;
+            border-radius: 22px;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
             background: rgba(59,130,246,0.3);
             white-space: nowrap;
             flex-shrink: 0;
             box-sizing: border-box;
         }
-        
+
         /* Minimalist Clock */
         #clock {
             display: flex;
@@ -72,14 +72,14 @@
             flex-shrink: 0;
             box-sizing: border-box;
         }
-        
+
         /* Clock row with settings button */
         #clock-row {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
+
         #settings-btn {
             display: flex;
             align-items: center;
@@ -93,37 +93,37 @@
             cursor: pointer;
             transition: all 0.15s ease-out;
         }
-        
+
         #settings-btn:hover {
             background: rgba(255,255,255,0.15);
         }
-        
+
         #settings-btn:active {
             transform: scale(0.92);
         }
-        
+
         @media (max-width: 768px) {
             #header {
                 top: 16px;
                 left: 16px;
                 gap: 6px;
             }
-            
+
             #settings-btn {
                 width: 36px;
                 height: 36px;
                 border-radius: 18px;
             }
-            
+
             #badge {
                 font-size: 11px;
                 height: 36px;
                 padding: 0 12px;
                 border-radius: 18px;
             }
-            
-            #clock { 
-                font-size: 16px; 
+
+            #clock {
+                font-size: 16px;
                 height: 36px;
                 padding: 0 14px;
                 border-radius: 18px;
@@ -135,11 +135,11 @@
             transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #timer-text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #timer-time { 
-            font-size: 52px; 
-            font-weight: 300; 
-            color: #fff; 
-            font-family: ui-monospace, SFMono-Regular, monospace; 
+        #timer-time {
+            font-size: 52px;
+            font-weight: 300;
+            color: #fff;
+            font-family: ui-monospace, SFMono-Regular, monospace;
             letter-spacing: -0.02em;
         }
         #timer-status { margin-top: 4px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.15em; }
@@ -156,7 +156,7 @@
         .ctrl.small:active { background: rgba(255,255,255,0.15); }
         .ctrl.large { width: 60px; height: 60px; background: #fff; border: none; color: #1f2937; box-shadow: 0 8px 24px -6px rgba(0,0,0,0.4); }
         .ctrl.large:active { transform: scale(0.95); box-shadow: 0 4px 16px -4px rgba(0,0,0,0.3); }
-        
+
         /* Responsive sizing using CSS variables - ENLARGED */
         :root {
             --ring-size: min(60vw, 60vh, 520px);
@@ -165,7 +165,7 @@
             --btn-small: min(12vw, 12vh, 88px);
             --badge-font: min(5vw, 5vh, 22px);
         }
-        
+
         /* Desktop: horizontal layout */
         @media (min-width: 769px) {
             #content {
@@ -174,13 +174,13 @@
                 gap: 5vw;
                 padding: 40px;
             }
-            
+
             #timer-section {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
             }
-            
+
             #controls-section {
                 display: flex;
                 flex-direction: column;
@@ -188,42 +188,64 @@
                 justify-content: center;
                 gap: 24px;
             }
-            
-            #badge { 
-                font-size: var(--badge-font); 
-                padding: 8px 20px; 
-                margin-bottom: 24px; 
+
+            #clock-row {
+                gap: 12px;
             }
-            
-            #ring { 
-                width: var(--ring-size); 
-                height: var(--ring-size); 
+
+            #settings-btn {
+                width: 56px;
+                height: 56px;
+                border-radius: 28px;
+            }
+
+            #settings-btn svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            #clock {
+                height: 56px;
+                padding: 0 24px;
+                font-size: 24px;
+                border-radius: 28px;
+            }
+
+            #badge {
+                font-size: var(--badge-font);
+                padding: 8px 24px;
+                margin-bottom: 24px;
+            }
+
+            #ring {
+                width: var(--ring-size);
+                height: var(--ring-size);
                 margin-bottom: 0;
             }
-            
+
             #timer-time { font-size: var(--timer-font); }
-            
-            #timer-status { 
-                font-size: min(2.5vw, 2.5vh, 16px); 
+
+            #timer-status {
+                font-size: min(2.5vw, 2.5vh, 16px);
                 margin-top: 8px;
             }
-            
-            .ctrl.large { 
-                width: var(--btn-large); 
-                height: var(--btn-large); 
+
+            .ctrl.large {
+                width: var(--btn-large);
+                height: var(--btn-large);
             }
-            
-            .ctrl.small { 
-                width: var(--btn-small); 
-                height: var(--btn-small); 
+
+            .ctrl.small {
+                width: var(--btn-small);
+                height: var(--btn-small);
             }
-            
-            #controls { 
+
+            #controls {
                 flex-direction: column;
                 gap: 20px;
             }
         }
-        
+
         /* Mobile CSS variables */
         body.is-mobile {
             --ring-size: min(85vw, 420px);
@@ -300,7 +322,7 @@
                 align-items: center;
             }
         }
-        
+
         /* Settings Modal */
         #settings-modal {
             display: none;
@@ -314,11 +336,11 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         #settings-modal.active {
             display: flex;
         }
-        
+
         #settings-content {
             background: #1a1a1a;
             border-radius: 16px;
@@ -329,20 +351,20 @@
             overflow-y: auto;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
+
         #settings-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        
+
         #settings-title {
             font-size: 20px;
             font-weight: 600;
             color: #fff;
         }
-        
+
         #settings-close {
             background: none;
             border: none;
@@ -351,15 +373,15 @@
             cursor: pointer;
             padding: 4px;
         }
-        
+
         #settings-close:hover {
             color: #fff;
         }
-        
+
         .settings-section {
             margin-bottom: 24px;
         }
-        
+
         .settings-section-title {
             font-size: 14px;
             font-weight: 600;
@@ -368,7 +390,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-        
+
         .settings-row {
             display: flex;
             justify-content: space-between;
@@ -376,12 +398,12 @@
             margin-bottom: 12px;
             gap: 12px;
         }
-        
+
         .settings-label {
             font-size: 14px;
             color: rgba(255,255,255,0.7);
         }
-        
+
         .settings-input {
             width: 70px;
             padding: 8px 12px;
@@ -392,19 +414,19 @@
             font-size: 14px;
             text-align: center;
         }
-        
+
         .settings-input:focus {
             outline: none;
             border-color: rgba(59,130,246,0.5);
         }
-        
+
         .settings-toggle {
             display: flex;
             align-items: center;
             gap: 12px;
             cursor: pointer;
         }
-        
+
         .toggle-switch {
             width: 44px;
             height: 24px;
@@ -413,11 +435,11 @@
             position: relative;
             transition: background 0.2s;
         }
-        
+
         .toggle-switch.active {
             background: rgba(59,130,246,0.8);
         }
-        
+
         .toggle-knob {
             width: 20px;
             height: 20px;
@@ -428,11 +450,11 @@
             left: 2px;
             transition: transform 0.2s;
         }
-        
+
         .toggle-switch.active .toggle-knob {
             transform: translateX(20px);
         }
-        
+
         .settings-credits {
             font-size: 13px;
             color: rgba(255,255,255,0.5);
@@ -441,16 +463,16 @@
             padding-top: 16px;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
-        
+
         .settings-credits a {
             color: rgba(59,130,246,0.8);
             text-decoration: none;
         }
-        
+
         .settings-credits a:hover {
             text-decoration: underline;
         }
-        
+
         #settings-save {
             width: 100%;
             padding: 12px;
@@ -463,11 +485,11 @@
             cursor: pointer;
             margin-top: 8px;
         }
-        
+
         #settings-save:hover {
             background: rgba(59,130,246,1);
         }
-        
+
         .settings-reset-btn {
             width: 100%;
             padding: 10px;
@@ -479,29 +501,29 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        
+
         .settings-reset-btn:hover {
             background: rgba(239, 68, 68, 0.3);
         }
-        
+
         /* Keyboard shortcuts in settings - desktop only */
         #shortcuts-section {
             display: block;
         }
-        
+
         body.is-mobile #shortcuts-section {
             display: none;
         }
-        
+
         /* Vibration toggle - mobile only */
         #vibrate-row {
             display: none;
         }
-        
+
         body.is-mobile #vibrate-row {
             display: flex;
         }
-        
+
         .settings-shortcut-row {
             display: flex;
             justify-content: space-between;
@@ -509,7 +531,7 @@
             margin-bottom: 12px;
             gap: 16px;
         }
-        
+
         .settings-shortcut-key {
             display: inline-flex;
             align-items: center;
@@ -524,7 +546,7 @@
             font-weight: 600;
             color: rgba(255,255,255,0.9);
         }
-        
+
         .settings-shortcut-desc {
             font-size: 13px;
             color: rgba(255,255,255,0.6);
@@ -583,7 +605,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Settings Modal -->
     <div id="settings-modal">
         <div id="settings-content">
@@ -591,7 +613,7 @@
                 <div id="settings-title">Settings</div>
                 <button id="settings-close">&times;</button>
             </div>
-            
+
             <div class="settings-section">
                 <div class="settings-section-title">Timer Durations</div>
                 <div class="settings-row">
@@ -607,7 +629,7 @@
                     <input type="number" id="long-break-minutes" class="settings-input" value="15" min="1" max="120">
                 </div>
             </div>
-            
+
             <div class="settings-section">
                 <div class="settings-section-title">Preferences</div>
                 <div class="settings-row">
@@ -635,7 +657,7 @@
                     </label>
                 </div>
             </div>
-            
+
             <div class="settings-section" id="shortcuts-section">
                 <div class="settings-section-title">Keyboard Shortcuts</div>
                 <div class="settings-shortcut-row">
@@ -647,12 +669,12 @@
                     <span class="settings-shortcut-desc">Reset timer (when running)<br>Switch mode (when paused)</span>
                 </div>
             </div>
-            
+
             <div class="settings-section">
                 <div class="settings-section-title">Data</div>
                 <button id="settings-reset" class="settings-reset-btn">Reset All Settings</button>
             </div>
-            
+
             <div class="settings-section">
                 <div class="settings-credits">
                     <strong>Time & Flow</strong><br>
@@ -664,19 +686,19 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // Mobile Detection: User-Agent Client Hints (2026 standard)
         function detectMobile() {
             // UA-CH API - returns true for phones (Chrome/Edge)
             return navigator.userAgentData?.mobile === true;
         }
-        
+
         // Apply mobile class on load
         if (detectMobile()) {
             document.body.classList.add('is-mobile');
         }
-        
+
         // Settings
         let customWorkMinutes = 25;
         let customShortBreakMinutes = 5;
@@ -684,7 +706,7 @@
         let cookiesEnabled = true;
         let soundEnabled = true;
         let vibrateEnabled = true;
-        
+
         const settingsModal = document.getElementById('settings-modal');
         const settingsBtn = document.getElementById('settings-btn');
         const settingsClose = document.getElementById('settings-close');
@@ -697,7 +719,7 @@
         const soundToggleSwitch = soundToggle.querySelector('.toggle-switch');
         const vibrateToggle = document.getElementById('vibrate-toggle');
         const vibrateToggleSwitch = vibrateToggle.querySelector('.toggle-switch');
-        
+
         function openSettings() {
             workMinutesInput.value = customWorkMinutes;
             shortBreakMinutesInput.value = customShortBreakMinutes;
@@ -719,12 +741,12 @@
             }
             settingsModal.classList.add('active');
         }
-        
+
         function closeSettings() {
             saveSettings();
             settingsModal.classList.remove('active');
         }
-        
+
         function saveSettings() {
             customWorkMinutes = parseInt(workMinutesInput.value) || 25;
             customShortBreakMinutes = parseInt(shortBreakMinutesInput.value) || 5;
@@ -732,7 +754,7 @@
             cookiesEnabled = toggleSwitch.classList.contains('active');
             soundEnabled = soundToggleSwitch.classList.contains('active');
             vibrateEnabled = vibrateToggleSwitch.classList.contains('active');
-            
+
             // Save to cookie
             if (cookiesEnabled) {
                 const settings = {
@@ -745,7 +767,7 @@
                 };
                 setCookie('flowSettings', JSON.stringify(settings), 365);
             }
-            
+
             // Update current timer if not running
             if (!isRunning) {
                 if (mode === 'work') {
@@ -758,7 +780,7 @@
                 updateDisplay();
             }
         }
-        
+
         function loadSettings() {
             const saved = getCookie('flowSettings');
             if (saved) {
@@ -775,15 +797,15 @@
                 }
             }
         }
-        
+
         settingsBtn.addEventListener('click', openSettings);
         settingsClose.addEventListener('click', closeSettings);
-        
+
         // Auto-save when inputs change
         workMinutesInput.addEventListener('change', saveSettings);
         shortBreakMinutesInput.addEventListener('change', saveSettings);
         longBreakMinutesInput.addEventListener('change', saveSettings);
-        
+
         // Reset button handler
         const settingsReset = document.getElementById('settings-reset');
         settingsReset.addEventListener('click', () => {
@@ -795,18 +817,18 @@
                 cookiesEnabled = true;
                 soundEnabled = true;
                 vibrateEnabled = true;
-                
+
                 // Clear cookies
                 setCookie('flowSettings', '', -1);
                 setCookie('flowState', '', -1);
-                
+
                 // Reset timer
                 clearInterval(timerInterval);
                 isRunning = false;
                 mode = 'work';
                 timeLeft = customWorkMinutes * 60;
                 workSessionsCompleted = 0;
-                
+
                 // Update UI
                 workMinutesInput.value = customWorkMinutes;
                 shortBreakMinutesInput.value = customShortBreakMinutes;
@@ -815,49 +837,49 @@
                 soundToggleSwitch.classList.add('active');
                 vibrateToggleSwitch.classList.add('active');
                 updateDisplay();
-                
+
                 alert('Settings reset to defaults!');
             }
         });
-        
+
         cookieToggle.addEventListener('click', () => {
             toggleSwitch.classList.toggle('active');
             saveSettings();
         });
-        
+
         soundToggle.addEventListener('click', () => {
             soundToggleSwitch.classList.toggle('active');
             saveSettings();
         });
-        
+
         vibrateToggle.addEventListener('click', () => {
             vibrateToggleSwitch.classList.toggle('active');
             saveSettings();
         });
-        
+
         // Close modal when clicking outside
         settingsModal.addEventListener('click', (e) => {
             if (e.target === settingsModal) {
                 closeSettings();
             }
         });
-        
+
         // Config - use custom values
         const SESSIONS_BEFORE_LONG_BREAK = 4;
-        
+
         // State (initialized with defaults, will be overwritten by loadState if saved state exists)
         let mode = 'work';
         let timeLeft = 25 * 60; // Default, will be updated after loading settings/state
         let isRunning = false;
         let timerInterval = null;
         let workSessionsCompleted = 0;
-        
+
         // Load settings first
         loadSettings();
-        
+
         // Set default timeLeft based on custom settings (will be overwritten by loadState if saved)
         timeLeft = customWorkMinutes * 60;
-        
+
         // DOM refs
         const badge = document.getElementById('badge');
         const timerTime = document.getElementById('timer-time');
@@ -865,14 +887,14 @@
         const progressCircle = document.getElementById('progress');
         const iconPlay = document.getElementById('icon-play');
         const iconPause = document.getElementById('icon-pause');
-        
+
         // Format seconds to MM:SS
         function formatTime(seconds) {
             const m = Math.floor(seconds / 60);
             const s = seconds % 60;
             return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
         }
-        
+
         // Update UI
         function updateDisplay() {
             let totalTime;
@@ -883,13 +905,13 @@
             } else {
                 totalTime = customLongBreakMinutes * 60;
             }
-            
+
             const progress = ((totalTime - timeLeft) / totalTime) * 100;
             const circumference = 2 * Math.PI * 120;
             const offset = circumference - (progress / 100) * circumference;
-            
+
             timerTime.textContent = formatTime(timeLeft);
-            
+
             if (isRunning) {
                 if (mode === 'work') {
                     timerStatus.textContent = 'Focusing...';
@@ -901,7 +923,7 @@
             } else {
                 timerStatus.textContent = 'Paused';
             }
-            
+
             if (mode === 'work') {
                 if (isRunning) {
                     badge.textContent = `Deep Work ${workSessionsCompleted % SESSIONS_BEFORE_LONG_BREAK + 1}/${SESSIONS_BEFORE_LONG_BREAK}`;
@@ -913,28 +935,28 @@
             } else {
                 badge.textContent = 'Long Rest';
             }
-            
+
             progressCircle.style.strokeDashoffset = offset;
             iconPlay.style.display = isRunning ? 'none' : 'block';
             iconPause.style.display = isRunning ? 'block' : 'none';
         }
-        
+
         // Sound effect for mode switch
         function playModeSwitchSound(soundType = 'default') {
             if (!soundEnabled) return;
-            
+
             // Vibrate on mobile (200ms pattern)
             if (vibrateEnabled && 'vibrate' in navigator) {
                 navigator.vibrate([200, 100, 200]);
             }
-            
+
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            
+
             // Different sounds for different events
             if (soundType === 'workEnd') {
                 // Work finished - triumphant ascending major chord (C5-E5-G5)
@@ -967,10 +989,10 @@
                 oscillator.stop(audioCtx.currentTime + 0.5);
             }
         }
-        
+
         // Wake Lock to prevent screen from sleeping
         let wakeLock = null;
-        
+
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
                 try {
@@ -983,14 +1005,14 @@
                 }
             }
         }
-        
+
         function releaseWakeLock() {
             if (wakeLock) {
                 wakeLock.release();
                 wakeLock = null;
             }
         }
-        
+
         // Toggle timer
         function toggle() {
             if (isRunning) {
@@ -1007,7 +1029,7 @@
                         // Determine sound type before switching mode
                         const soundType = mode === 'work' ? 'workEnd' : 'breakEnd';
                         playModeSwitchSound(soundType);
-                        
+
                         // Auto-switch mode based on Pomodoro logic
                         if (mode === 'work') {
                             workSessionsCompleted++;
@@ -1033,7 +1055,7 @@
             }
             updateDisplay();
         }
-        
+
         // Reset timer
         function reset() {
             clearInterval(timerInterval);
@@ -1049,7 +1071,7 @@
             saveState();
             updateDisplay();
         }
-        
+
         // Switch mode manually (cycles through: work -> shortBreak -> longBreak -> work)
         function switchMode() {
             clearInterval(timerInterval);
@@ -1069,16 +1091,16 @@
             saveState();
             updateDisplay();
         }
-        
+
         // Event listeners
         const playBtn = document.getElementById('play-btn');
         const resetBtn = document.getElementById('reset-btn');
         const modeBtn = document.getElementById('mode-btn');
-        
+
         playBtn.addEventListener('click', toggle);
         resetBtn.addEventListener('click', reset);
         modeBtn.addEventListener('click', switchMode);
-        
+
         // Helper to animate button press
         function animateButton(btn) {
             btn.classList.remove('key-pressed');
@@ -1086,15 +1108,15 @@
             btn.classList.add('key-pressed');
             setTimeout(() => btn.classList.remove('key-pressed'), 300);
         }
-        
+
         // Keyboard shortcuts
         // R = if running: reset; if paused: switch mode
         document.addEventListener('keydown', e => {
             // Skip if Ctrl or Cmd is pressed (let browser handle shortcuts like Ctrl+R)
             if (e.ctrlKey || e.metaKey) return;
-            
+
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            
+
             // Space = Play/Pause
             if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault();
@@ -1102,7 +1124,7 @@
                 animateButton(playBtn);
                 return;
             }
-            
+
             // R = if running: reset; if paused: switch mode
             if (e.key === 'r' || e.key === 'R') {
                 if (isRunning) {
@@ -1115,14 +1137,14 @@
                 return;
             }
         });
-        
+
         // Cookie functions
         function setCookie(name, value, days) {
             const expires = new Date();
             expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
             document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
         }
-        
+
         function getCookie(name) {
             const nameEQ = name + "=";
             const ca = document.cookie.split(';');
@@ -1134,7 +1156,7 @@
             }
             return null;
         }
-        
+
         // Save state to cookie
         function saveState() {
             if (!cookiesEnabled) return;
@@ -1147,25 +1169,25 @@
             };
             setCookie('flowState', JSON.stringify(state), 30);
         }
-        
+
         // Load state from cookie
         function loadState() {
             const saved = getCookie('flowState');
             if (!saved) return false;
-            
+
             try {
                 const state = JSON.parse(saved);
                 const now = Date.now();
                 const elapsed = Math.floor((now - state.timestamp) / 1000);
-                
+
                 mode = state.mode || 'work';
                 workSessionsCompleted = state.workSessionsCompleted || 0;
-                
+
                 // Calculate remaining time
                 if (state.isRunning) {
                     // Timer was running when saved - subtract elapsed time
                     timeLeft = Math.max(0, state.timeLeft - elapsed);
-                    
+
                     // If timer expired while away, switch modes
                     if (timeLeft <= 0) {
                         // Auto-switch based on what mode we were in
@@ -1191,22 +1213,22 @@
                     timeLeft = state.timeLeft;
                     isRunning = false;
                 }
-                
+
                 return true;
             } catch (e) {
                 console.log('Failed to load state:', e);
                 return false;
             }
         }
-        
+
         // Save state before page unload
         window.addEventListener('beforeunload', saveState);
-        
+
         // Also save periodically while running
         setInterval(() => {
             if (isRunning && cookiesEnabled) saveState();
         }, 10000); // Save every 10 seconds while running
-        
+
         // Clock
         const clock = document.getElementById('clock');
         function updateClock() {
@@ -1217,7 +1239,7 @@
         }
         updateClock();
         setInterval(updateClock, 1000);
-        
+
         // Init - load saved state if available
         const stateLoaded = loadState();
         if (!stateLoaded) {
@@ -1225,7 +1247,7 @@
             timeLeft = customWorkMinutes * 60;
         }
         updateDisplay();
-        
+
         // If timer was running when saved, restart the interval
         if (isRunning) {
             timerInterval = setInterval(() => {
