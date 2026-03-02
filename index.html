@@ -224,78 +224,72 @@
             }
         }
         
-        /* Mobile: vertical layout - ENLARGED */
-        @media (max-width: 768px) {
-            :root {
-                --ring-size: min(85vw, 420px);
-                --timer-font: min(24vw, 96px);
-                --btn-large: min(20vw, 90px);
-                --btn-small: min(16vw, 72px);
-                --badge-font: 16px;
-            }
-            
-            /* Header stays top-left on mobile */
-            #header {
-                position: absolute;
-                top: 16px;
-                left: 16px;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            
-            #clock {
-                height: 36px;
-                padding: 0 14px;
-                font-size: 14px;
-            }
-            
-            #badge {
-                height: 36px;
-                padding: 0 14px;
-                font-size: 11px;
-            }
-            
-            #clock-row {
-                gap: 6px;
-            }
-            
-            /* Timer and controls centered */
-            #content {
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                padding-top: 80px;
-            }
-            
-            #timer-section {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            #ring { 
-                width: var(--ring-size); 
-                height: var(--ring-size); 
-                margin-bottom: 24px;
-            }
-            
-            #timer-time { font-size: var(--timer-font); }
-            
-            .ctrl.large { 
-                width: var(--btn-large); 
-                height: var(--btn-large); 
-            }
-            
-            .ctrl.small { 
-                width: var(--btn-small); 
-                height: var(--btn-small); 
-            }
-            
-            #controls { gap: 16px; }
-            
-            #timer-status { font-size: 11px; }
+        /* Mobile CSS variables */
+        body.is-mobile {
+            --ring-size: min(85vw, 420px);
+            --timer-font: min(24vw, 96px);
+            --btn-large: min(20vw, 90px);
+            --btn-small: min(16vw, 72px);
+            --badge-font: 16px;
         }
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        body.is-mobile #clock {
+            height: 36px;
+            padding: 0 14px;
+            font-size: 14px;
+        }
+        
+        body.is-mobile #badge {
+            height: 36px;
+            padding: 0 14px;
+            font-size: 11px;
+        }
+        
+        body.is-mobile #clock-row {
+            gap: 6px;
+        }
+        
+        body.is-mobile #content {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding-top: 80px;
+        }
+        
+        body.is-mobile #timer-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        body.is-mobile #ring { 
+            width: var(--ring-size); 
+            height: var(--ring-size); 
+            margin-bottom: 24px;
+        }
+        
+        body.is-mobile #timer-time { font-size: var(--timer-font); }
+        
+        body.is-mobile .ctrl.large { 
+            width: var(--btn-large); 
+            height: var(--btn-large); 
+        }
+        
+        body.is-mobile .ctrl.small { 
+            width: var(--btn-small); 
+            height: var(--btn-small); 
+        }
+        
+        body.is-mobile #controls { gap: 16px; }
+        
+        body.is-mobile #timer-status { font-size: 11px; }
         
         /* Settings Modal */
         #settings-modal {
@@ -485,10 +479,8 @@
             display: block;
         }
         
-        @media (max-width: 768px) {
-            #shortcuts-section {
-                display: none;
-            }
+        body.is-mobile #shortcuts-section {
+            display: none;
         }
         
         /* Vibration toggle - mobile only */
@@ -496,10 +488,8 @@
             display: none;
         }
         
-        @media (max-width: 768px) {
-            #vibrate-row {
-                display: flex;
-            }
+        body.is-mobile #vibrate-row {
+            display: flex;
         }
         
         .settings-shortcut-row {
@@ -666,6 +656,36 @@
     </div>
     
     <script>
+        // Modern 2026 Mobile Detection using UA-CH + Feature Detection
+        function detectMobile() {
+            // 1. User-Agent Client Hints (Chromium/Edge) - most reliable
+            if (navigator.userAgentData?.mobile === true) {
+                return true;
+            }
+            
+            // 2. Pointer accuracy detection (coarse = finger/touch)
+            if (window.matchMedia("(pointer: coarse)").matches) {
+                return true;
+            }
+            
+            // 3. Touch capability check
+            if (navigator.maxTouchPoints > 0) {
+                return true;
+            }
+            
+            // 4. Legacy UA sniffing fallback (look for "Mobi")
+            if (/Mobi/i.test(navigator.userAgent)) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // Apply mobile class on load
+        if (detectMobile()) {
+            document.body.classList.add('is-mobile');
+        }
+        
         // Settings
         let customWorkMinutes = 25;
         let customShortBreakMinutes = 5;
