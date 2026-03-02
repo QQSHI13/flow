@@ -232,64 +232,74 @@
             --btn-small: min(16vw, 72px);
             --badge-font: 16px;
         }
+
+        body.is-mobile #header {
             position: absolute;
             top: 16px;
             left: 16px;
-            align-items: flex-start;
             gap: 8px;
         }
-        
+
         body.is-mobile #clock {
             height: 36px;
             padding: 0 14px;
             font-size: 14px;
         }
-        
+
         body.is-mobile #badge {
             height: 36px;
             padding: 0 14px;
             font-size: 11px;
         }
-        
+
         body.is-mobile #clock-row {
             gap: 6px;
         }
-        
-        body.is-mobile #content {
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding-top: 80px;
-        }
-        
-        body.is-mobile #timer-section {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        body.is-mobile #ring { 
-            width: var(--ring-size); 
-            height: var(--ring-size); 
+
+        body.is-mobile #ring {
+            width: var(--ring-size);
+            height: var(--ring-size);
             margin-bottom: 24px;
         }
-        
+
         body.is-mobile #timer-time { font-size: var(--timer-font); }
-        
-        body.is-mobile .ctrl.large { 
-            width: var(--btn-large); 
-            height: var(--btn-large); 
+
+        body.is-mobile .ctrl.large {
+            width: var(--btn-large);
+            height: var(--btn-large);
         }
-        
-        body.is-mobile .ctrl.small { 
-            width: var(--btn-small); 
-            height: var(--btn-small); 
+
+        body.is-mobile .ctrl.small {
+            width: var(--btn-small);
+            height: var(--btn-small);
         }
-        
+
         body.is-mobile #controls { gap: 16px; }
-        
+
         body.is-mobile #timer-status { font-size: 11px; }
+
+        /* Layout: Vertical for narrow screens (width-based) */
+        @media (max-width: 768px) {
+            #content {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding-top: 80px;
+            }
+
+            #timer-section {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #controls-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
         
         /* Settings Modal */
         #settings-modal {
