@@ -724,10 +724,12 @@
     </div>
 
     <script>
-        // Mobile Detection: User-Agent Client Hints (2026 standard)
+        // Mobile Detection: UA-CH API with screen size fallback
         function detectMobile() {
-            // UA-CH API - returns true for phones (Chrome/Edge)
-            return navigator.userAgentData?.mobile === true;
+            // Try UA-CH API first (Chrome/Edge)
+            if (navigator.userAgentData?.mobile === true) return true;
+            // Fallback: check screen width (phones are < 768px)
+            return window.innerWidth < 768 || screen.width < 768;
         }
 
         // Apply mobile class on load
@@ -1210,32 +1212,32 @@
 
         // Double-tap to toggle fullscreen (mobile only)
         let lastTouchTime = 0;
-        let lastTouchTarget = null;
-        document.addEventListener('touchend', (e) => {
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        
+        document.addEventListener('touchstart', (e) => {
             // Only on mobile
             if (!document.body.classList.contains('is-mobile')) return;
             
+            // Don't trigger if touching buttons/controls
+            if (e.target.closest('.ctrl') || e.target.closest('#settings-btn') || e.target.closest('#settings-content')) return;
+            
             const currentTime = new Date().getTime();
             const tapGap = currentTime - lastTouchTime;
-            const isSameTarget = e.target === lastTouchTarget;
+            const touch = e.touches[0];
+            const distance = Math.hypot(touch.clientX - lastTouchX, touch.clientY - lastTouchY);
             
-            // Don't trigger if touching buttons/controls
-            if (e.target.closest('.ctrl') || e.target.closest('#settings-btn') || e.target.closest('#settings-modal')) {
-                lastTouchTime = 0;
-                return;
-            }
-            
-            if (tapGap < 350 && tapGap > 50 && isSameTarget) {
+            if (tapGap < 400 && tapGap > 50 && distance < 50) {
                 // Double tap detected
                 e.preventDefault();
                 toggleFullscreen();
                 lastTouchTime = 0;
-                lastTouchTarget = null;
             } else {
                 lastTouchTime = currentTime;
-                lastTouchTarget = e.target;
+                lastTouchX = touch.clientX;
+                lastTouchY = touch.clientY;
             }
-        });
+        }, { passive: false });
 
         // Exit fullscreen handler
         document.addEventListener('fullscreenchange', () => {
