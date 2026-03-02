@@ -1248,9 +1248,11 @@
             setTimeout(() => btn.classList.remove('key-pressed'), 300);
         }
 
-        // Keyboard shortcuts
-        // R = if running: reset; if paused: switch mode
+        // Keyboard shortcuts (desktop only)
         document.addEventListener('keydown', e => {
+            // Skip on mobile devices
+            if (document.body.classList.contains('is-mobile')) return;
+            
             // Skip if Ctrl or Cmd is pressed (let browser handle shortcuts like Ctrl+R)
             if (e.ctrlKey || e.metaKey) return;
 
@@ -1295,6 +1297,15 @@
                 document.body.classList.remove('is-fullscreen');
             }
         }
+
+        // Double-click to toggle fullscreen (desktop only)
+        document.addEventListener('dblclick', (e) => {
+            // Only on desktop
+            if (document.body.classList.contains('is-mobile')) return;
+            // Don't trigger if clicking on buttons
+            if (e.target.closest('.ctrl') || e.target.closest('#settings-btn')) return;
+            toggleFullscreen();
+        });
 
         // Double-tap to toggle fullscreen (mobile only)
         let lastTouchTime = 0;
