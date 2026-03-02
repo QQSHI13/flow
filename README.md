@@ -29,6 +29,4 @@ This is a static site — just push to GitHub and enable Pages on the root folde
 
 Built with ❤️ by QQ with help from Nova ☄️
 
-<iframe style="width:100%;height:auto;min-width:600px;min-height:400px;" src="https://www.star-history.com/embed?secret=Z2hwXzZzdnd0VWF5SUdXM1h2SEhoTjdvU3FVNlh6cnB0dzNkaGFrWA==#QQSHI13/flow&type=date&legend=top-left" frameBorder="0"></iframe>
-
 
