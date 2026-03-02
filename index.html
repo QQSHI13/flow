@@ -674,7 +674,7 @@
             <div class="settings-section">
                 <div class="settings-section-title">Preferences</div>
                 <div class="settings-row">
-                    <span class="settings-label">Save state (cookies)</span>
+                    <span class="settings-label">cookies</span>
                     <label class="settings-toggle" id="cookie-toggle">
                         <div class="toggle-switch active">
                             <div class="toggle-knob"></div>
@@ -682,7 +682,7 @@
                     </label>
                 </div>
                 <div class="settings-row">
-                    <span class="settings-label">Sound on mode switch</span>
+                    <span class="settings-label">sound</span>
                     <label class="settings-toggle" id="sound-toggle">
                         <div class="toggle-switch active">
                             <div class="toggle-knob"></div>
@@ -711,10 +711,6 @@
                 </div>
                 <div class="settings-shortcut-row">
                     <span class="settings-shortcut-key">F</span>
-                    <span class="settings-shortcut-desc">Toggle fullscreen</span>
-                </div>
-                <div class="settings-shortcut-row">
-                    <span class="settings-shortcut-key">Double-click</span>
                     <span class="settings-shortcut-desc">Toggle fullscreen</span>
                 </div>
             </div>
@@ -1223,8 +1219,10 @@
             }
         }
 
-        // Double-click to toggle fullscreen
+        // Double-click to toggle fullscreen (mobile only)
         document.addEventListener('dblclick', (e) => {
+            // Only on mobile
+            if (!document.body.classList.contains('is-mobile')) return;
             // Don't trigger if clicking on buttons
             if (e.target.closest('.ctrl') || e.target.closest('#settings-btn')) return;
             toggleFullscreen();
