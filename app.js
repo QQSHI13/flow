@@ -700,6 +700,19 @@ const doubleTapFullscreen = {
 };
 
 // ============================================
+// SERVICE WORKER REGISTRATION (PWA)
+// ============================================
+const serviceWorker = {
+    init() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW registered:', reg.scope))
+                .catch(err => console.log('SW registration failed:', err));
+        }
+    }
+};
+
+// ============================================
 // INITIALIZATION
 // ============================================
 function init() {
@@ -730,6 +743,7 @@ function init() {
     fullscreen.init();
     doubleTapFullscreen.init();
     persistence.initAutoSave();
+    serviceWorker.init();
     
     // Event listeners for controls
     elements.playBtn.addEventListener('click', () => timer.toggle());
