@@ -245,7 +245,7 @@ const timer = {
     },
     
     tick() {
-        if (state.timeLeft <= 1) {
+        if (state.timeLeft <= 0) {
             this.onComplete();
         } else {
             state.timeLeft--;
@@ -422,6 +422,10 @@ const settings = {
     },
     
     save() {
+        const oldWorkMinutes = state.customWorkMinutes;
+        const oldShortBreakMinutes = state.customShortBreakMinutes;
+        const oldLongBreakMinutes = state.customLongBreakMinutes;
+        
         state.customWorkMinutes = parseInt(elements.workMinutesInput.value) || 25;
         state.customShortBreakMinutes = parseInt(elements.shortBreakMinutesInput.value) || 5;
         state.customLongBreakMinutes = parseInt(elements.longBreakMinutesInput.value) || 15;
@@ -433,10 +437,26 @@ const settings = {
             persistence.saveSettings();
         }
         
-        // Update timer if paused
+        // Update timer if paused AND current mode's duration changed
         if (!state.isRunning) {
-            state.timeLeft = timer.getTotalTime();
+            let currentModeDurationChanged = false;
+            switch (state.mode) {
+                case 'work':
+                    currentModeDurationChanged = oldWorkMinutes !== state.customWorkMinutes;
+                    break;
+                case 'shortBreak':
+                    currentModeDurationChanged = oldShortBreakMinutes !== state.customShortBreakMinutes;
+                    break;
+                case 'longBreak':
+                    currentModeDurationChanged = oldLongBreakMinutes !== state.customLongBreakMinutes;
+                    break;
+            }
+            
+            if (currentModeDurationChanged) {
+                state.timeLeft = timer.getTotalTime();
+            }
             ui.update();
+            persistence.saveState();
         }
     },
     
@@ -503,6 +523,13 @@ const settings = {
         // Close on backdrop click
         elements.settingsModal.addEventListener('click', (e) => {
             if (e.target === elements.settingsModal) this.close();
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && elements.settingsModal.classList.contains('active')) {
+                this.close();
+            }
         });
     }
 };
