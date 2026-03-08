@@ -1,11 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=time.html">
-    <title>Redirecting...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Time & Flow</title>
+
+    <!-- Favicon - Elegant Clock SVG -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23111213' stroke='%23fff' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23fff'/%3E%3Cline x1='50' y1='50' x2='50' y2='20' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='70' y2='50' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23111213' rx='40'/%3E%3Ccircle cx='90' cy='90' r='70' fill='none' stroke='%23fff' stroke-width='8'/%3E%3Ccircle cx='90' cy='90' r='8' fill='%23fff'/%3E%3Cline x1='90' y1='90' x2='90' y2='40' stroke='%23fff' stroke-width='8' stroke-linecap='round'/%3E%3Cline x1='90' y1='90' x2='120' y2='90' stroke='%23fff' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <p>Redirecting to <a href="time.html">Time</a>...</p>
+    <div id="app">
+        <!-- Header with badge and clock -->
+        <div id="header">
+            <div id="badge">Deep Work</div>
+            <div id="clock-row">
+                <div id="clock">00:00</div>
+                <button id="settings-btn" aria-label="Settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="content">
+            <!-- Timer Section -->
+            <div id="timer-section">
+                <div id="ring">
+                    <svg viewBox="0 0 280 280">
+                        <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                        <circle id="progress" cx="140" cy="140" r="120" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="754"/>
+                    </svg>
+                    <div id="timer-text">
+                        <div id="timer-time">25:00</div>
+                        <div id="timer-status">Paused</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Section -->
+            <div id="controls-section">
+                <div id="controls">
+                    <button class="ctrl small" id="reset-btn" aria-label="Reset">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                    </button>
+                    <button class="ctrl large" id="play-btn" aria-label="Play/Pause">
+                        <svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5,3 19,12 5,21"/>
+                        </svg>
+                        <svg id="icon-pause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+                            <rect x="6" y="4" width="4" height="16"/>
+                            <rect x="14" y="4" width="4" height="16"/>
+                        </svg>
+                    </button>
+                    <button class="ctrl small" id="mode-btn" aria-label="Switch Mode">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v18"/>
+                            <path d="m9 18 3 3 3-3"/>
+                            <path d="m9 6 3-3 3 3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal">
+        <div id="settings-content">
+            <div id="settings-header">
+                <div id="settings-title">Settings</div>
+                <button id="settings-close">×</button>
+            </div>
+
+            <!-- Timer Durations -->
+            <div class="settings-section">
+                <div class="settings-section-title">Timer Durations</div>
+                <div class="settings-row">
+                    <span class="settings-label">Work (minutes)</span>
+                    <input type="number" id="work-minutes" class="settings-input" value="25" min="1" max="120">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Short Break (minutes)</span>
+                    <input type="number" id="short-break-minutes" class="settings-input" value="5" min="1" max="60">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Long Break (minutes)</span>
+                    <input type="number" id="long-break-minutes" class="settings-input" value="15" min="1" max="120">
+                </div>
+            </div>
+
+            <!-- Preferences -->
+            <div class="settings-section">
+                <div class="settings-section-title">Preferences</div>
+                <div class="settings-row">
+                    <span class="settings-label">cookies</span>
+                    <label class="settings-toggle" id="cookie-toggle">
+                        <div class="toggle-switch active">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </label>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">sound</span>
+                    <label class="settings-toggle" id="sound-toggle">
+                        <div class="toggle-switch active">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Keyboard Shortcuts (desktop only) -->
+            <div class="settings-section" id="shortcuts-section">
+                <div class="settings-section-title">Keyboard Shortcuts</div>
+                <div class="settings-shortcut-row">
+                    <span class="settings-shortcut-key">Space</span>
+                    <span class="settings-shortcut-desc">Play / Pause timer</span>
+                </div>
+                <div class="settings-shortcut-row">
+                    <span class="settings-shortcut-key">R</span>
+                    <span class="settings-shortcut-desc">Reset timer (when running)<br>Switch mode (when paused)</span>
+                </div>
+                <div class="settings-shortcut-row">
+                    <span class="settings-shortcut-key">F</span>
+                    <span class="settings-shortcut-desc">Toggle fullscreen</span>
+                </div>
+            </div>
+
+            <!-- Data -->
+            <div class="settings-section">
+                <div class="settings-section-title">Data</div>
+                <button id="settings-reset" class="settings-reset-btn">Reset All Settings</button>
+            </div>
+
+            <!-- Credits -->
+            <div class="settings-section">
+                <div class="settings-credits">
+                    <strong>Time & Flow</strong><br>
+                    A Pomodoro timer by QQ<br>
+                    With help from Nova ☄️<br><br>
+                    Built with ❤️ using vanilla JS<br>
+                    <a href="https://github.com/QQSHI13/flow" target="_blank">View on GitHub</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
 </body>
 </html>
