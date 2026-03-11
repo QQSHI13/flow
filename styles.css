@@ -2,6 +2,49 @@
    Flow - Pomodoro Timer Styles
    ============================================ */
 
+/* CSS Variables for theming */
+:root {
+    --ring-size: min(60vw, 60vh, 520px);
+    --timer-font: min(18vw, 18vh, 120px);
+    --btn-large: min(16vw, 16vh, 120px);
+    --btn-small: min(12vw, 12vh, 88px);
+    --badge-font: min(5vw, 5vh, 22px);
+    
+    /* Dark theme (default) */
+    --bg-color: #111213;
+    --text-color: #fff;
+    --text-muted: rgba(255, 255, 255, 0.5);
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --card-bg: #1a1a1a;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --input-border: rgba(255, 255, 255, 0.2);
+    --button-bg: rgba(255, 255, 255, 0.1);
+    --button-border: rgba(255, 255, 255, 0.2);
+    --clock-bg: rgba(96, 96, 96, 0.36);
+    --clock-border: rgba(105, 105, 105, 0.38);
+    --modal-bg: rgba(0, 0, 0, 0.8);
+    --ring-bg: rgba(255, 255, 255, 0.1);
+}
+
+/* Light theme */
+[data-theme="light"] {
+    --bg-color: #f5f5f5;
+    --text-color: #1f2937;
+    --text-muted: rgba(31, 41, 55, 0.5);
+    --text-secondary: rgba(31, 41, 55, 0.7);
+    --card-bg: #ffffff;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --input-bg: rgba(0, 0, 0, 0.05);
+    --input-border: rgba(0, 0, 0, 0.2);
+    --button-bg: rgba(0, 0, 0, 0.05);
+    --button-border: rgba(0, 0, 0, 0.1);
+    --clock-bg: rgba(200, 200, 200, 0.4);
+    --clock-border: rgba(150, 150, 150, 0.3);
+    --modal-bg: rgba(0, 0, 0, 0.5);
+    --ring-bg: rgba(0, 0, 0, 0.1);
+}
+
 /* Reset & Base */
 * {
     margin: 0;
@@ -15,8 +58,10 @@ html, body {
     width: 100%;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #111213;
+    background: var(--bg-color);
+    color: var(--text-color);
     touch-action: manipulation;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Main App Container */
@@ -63,7 +108,7 @@ html, body {
     border-radius: 22px;
     font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     background: rgba(59, 130, 246, 0.3);
@@ -98,13 +143,13 @@ html, body {
     border-radius: 22px;
     font-size: 18px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
     font-family: Arial, Helvetica, sans-serif;
     letter-spacing: 1px;
-    background: rgba(96, 96, 96, 0.36);
-    border: 1px solid rgba(105, 105, 105, 0.38);
-    box-shadow: 7px 7px 11px 0 rgba(0, 0, 0, 0.46);
-    text-shadow: 5px 5px 11px rgba(0, 0, 0, 0.64);
+    background: var(--clock-bg);
+    border: 1px solid var(--clock-border);
+    box-shadow: 7px 7px 11px 0 rgba(0, 0, 0, 0.2);
+    text-shadow: 5px 5px 11px rgba(0, 0, 0, 0.2);
     transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
     flex-shrink: 0;
 }
@@ -123,15 +168,16 @@ html, body {
     width: 44px;
     height: 44px;
     border-radius: 22px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--button-bg);
+    border: 1px solid var(--button-border);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s ease-out;
 }
 
 #settings-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--button-bg);
+    opacity: 0.8;
 }
 
 #settings-btn:active {
@@ -159,6 +205,10 @@ html, body {
     transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
 }
 
+#ring svg circle:first-child {
+    stroke: var(--ring-bg);
+}
+
 #timer-text {
     position: absolute;
     top: 0;
@@ -174,7 +224,7 @@ html, body {
 #timer-time {
     font-size: 52px;
     font-weight: 300;
-    color: #fff;
+    color: var(--text-color);
     font-family: ui-monospace, SFMono-Regular, monospace;
     letter-spacing: -0.02em;
 }
@@ -183,7 +233,7 @@ html, body {
     margin-top: 4px;
     font-size: 11px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.15em;
 }
@@ -226,20 +276,20 @@ html, body {
 .ctrl.small {
     width: 44px;
     height: 44px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--button-bg);
+    border: 1px solid var(--button-border);
+    color: var(--text-secondary);
 }
 
 .ctrl.small:active {
-    background: rgba(255, 255, 255, 0.15);
+    opacity: 0.8;
 }
 
 .ctrl.large {
     width: 60px;
     height: 60px;
-    background: #fff;
-    color: #1f2937;
+    background: var(--text-color);
+    color: var(--bg-color);
     box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
 }
 
@@ -274,7 +324,7 @@ body.is-fullscreen:hover #header {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: var(--modal-bg);
     z-index: 100;
     align-items: center;
     justify-content: center;
@@ -285,14 +335,15 @@ body.is-fullscreen:hover #header {
 }
 
 #settings-content {
-    background: #1a1a1a;
+    background: var(--card-bg);
     border-radius: 16px;
     padding: 24px;
     width: 90%;
     max-width: 400px;
     max-height: 80vh;
     overflow-y: auto;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
 }
 
 #settings-header {
@@ -305,20 +356,20 @@ body.is-fullscreen:hover #header {
 #settings-title {
     font-size: 20px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text-color);
 }
 
 #settings-close {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
     font-size: 24px;
     cursor: pointer;
     padding: 4px;
 }
 
 #settings-close:hover {
-    color: #fff;
+    color: var(--text-color);
 }
 
 .settings-section {
@@ -328,7 +379,7 @@ body.is-fullscreen:hover #header {
 .settings-section-title {
     font-size: 14px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary);
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -344,16 +395,16 @@ body.is-fullscreen:hover #header {
 
 .settings-label {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
 }
 
 .settings-input {
     width: 70px;
     padding: 8px 12px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text-color);
     font-size: 14px;
     text-align: center;
 }
@@ -373,7 +424,7 @@ body.is-fullscreen:hover #header {
 .toggle-switch {
     width: 44px;
     height: 24px;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--input-border);
     border-radius: 12px;
     position: relative;
     transition: background 0.2s;
@@ -386,7 +437,7 @@ body.is-fullscreen:hover #header {
 .toggle-knob {
     width: 20px;
     height: 20px;
-    background: #fff;
+    background: var(--text-color);
     border-radius: 50%;
     position: absolute;
     top: 2px;
@@ -416,11 +467,11 @@ body.is-fullscreen:hover #header {
 
 .settings-credits {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted);
     line-height: 1.6;
     text-align: center;
     padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--border-color);
 }
 
 .settings-credits a {
@@ -432,7 +483,48 @@ body.is-fullscreen:hover #header {
     text-decoration: underline;
 }
 
-/* Keyboard Shortcuts (desktop only) */
+/* ============================================
+   Stats Section
+   ============================================ */
+
+#stats-section {
+    background: var(--input-bg);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.stats-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 16px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-color);
+    font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ============================================
+   Keyboard Shortcuts (desktop only)
+   ============================================ */
+
 #shortcuts-section {
     display: block;
 }
@@ -455,32 +547,20 @@ body.is-mobile #shortcuts-section {
     justify-content: center;
     min-width: 48px;
     padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 6px;
     font-family: ui-monospace, SFMono-Regular, monospace;
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
 }
 
 .settings-shortcut-desc {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-muted);
     text-align: right;
     line-height: 1.5;
-}
-
-/* ============================================
-   Responsive Variables
-   ============================================ */
-
-:root {
-    --ring-size: min(60vw, 60vh, 520px);
-    --timer-font: min(18vw, 18vh, 120px);
-    --btn-large: min(16vw, 16vh, 120px);
-    --btn-small: min(12vw, 12vh, 88px);
-    --badge-font: min(5vw, 5vh, 22px);
 }
 
 /* ============================================

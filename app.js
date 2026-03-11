@@ -12,10 +12,12 @@ const CONFIG = {
         workMinutes: 25,
         shortBreakMinutes: 5,
         longBreakMinutes: 15,
-        cookiesEnabled: true,
-        soundEnabled: true
+        soundEnabled: true,
+        autoStartBreak: false,
+        theme: 'dark'
     },
-    STATE_SAVE_INTERVAL: 10000 // ms
+    STATE_SAVE_INTERVAL: 10000, // ms
+    TIMER_TICK_INTERVAL: 100 // ms (for accuracy)
 };
 
 // ============================================
@@ -27,15 +29,23 @@ const state = {
     isRunning: false,
     workSessionsCompleted: 0,
     timerInterval: null,
+    clockInterval: null,
     wakeLock: null,
     audioCtx: null,
+    startTime: null, // For accurate timing
+    remainingAtStart: 0, // For accurate timing
     
     // Custom settings
     customWorkMinutes: CONFIG.DEFAULTS.workMinutes,
     customShortBreakMinutes: CONFIG.DEFAULTS.shortBreakMinutes,
     customLongBreakMinutes: CONFIG.DEFAULTS.longBreakMinutes,
-    cookiesEnabled: CONFIG.DEFAULTS.cookiesEnabled,
-    soundEnabled: CONFIG.DEFAULTS.soundEnabled
+    soundEnabled: CONFIG.DEFAULTS.soundEnabled,
+    autoStartBreak: CONFIG.DEFAULTS.autoStartBreak,
+    theme: CONFIG.DEFAULTS.theme,
+    
+    // Task/Session tracking
+    currentTask: '',
+    sessionHistory: []
 };
 
 // ============================================
@@ -65,8 +75,18 @@ const elements = {
     workMinutesInput: document.getElementById('work-minutes'),
     shortBreakMinutesInput: document.getElementById('short-break-minutes'),
     longBreakMinutesInput: document.getElementById('long-break-minutes'),
-    cookieToggle: document.getElementById('cookie-toggle'),
-    soundToggle: document.getElementById('sound-toggle')
+    soundToggle: document.getElementById('sound-toggle'),
+    autoStartBreakToggle: document.getElementById('auto-start-break-toggle'),
+    themeToggle: document.getElementById('theme-toggle'),
+    themeLabel: document.getElementById('theme-label'),
+    
+    // Task tracking
+    taskInput: document.getElementById('task-input'),
+    
+    // Stats
+    statsSection: document.getElementById('stats-section'),
+    todaySessions: document.getElementById('today-sessions'),
+    todayFocusTime: document.getElementById('today-focus-time')
 };
 
 // ============================================
@@ -79,9 +99,20 @@ const utils = {
         return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     },
     
+    formatDuration(minutes) {
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        if (h > 0) {
+            return `${h}h ${m}m`;
+        }
+        return `${m}m`;
+    },
+    
     detectMobile() {
         // UA-CH API - returns true for phones (Chrome/Edge)
-        return navigator.userAgentData?.mobile === true;
+        // Fallback to user agent sniffing for other browsers
+        return navigator.userAgentData?.mobile === true || 
+               /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     },
     
     animateButton(btn) {
@@ -89,33 +120,91 @@ const utils = {
         void btn.offsetWidth; // Force reflow
         btn.classList.add('key-pressed');
         setTimeout(() => btn.classList.remove('key-pressed'), 300);
+    },
+    
+    // Input validation
+    validateMinutes(value, min = 1, max = 120) {
+        const num = parseInt(value, 10);
+        if (isNaN(num) || num < min) return min;
+        if (num > max) return max;
+        return num;
+    },
+    
+    // Get today's date string
+    getTodayKey() {
+        return new Date().toISOString().split('T')[0];
     }
 };
 
 // ============================================
-// COOKIES
+// LOCALSTORAGE (Migrated from cookies)
 // ============================================
-const cookies = {
-    set(name, value, days) {
-        const expires = new Date();
-        expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-        document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
-    },
-    
-    get(name) {
-        const nameEQ = name + '=';
-        const ca = document.cookie.split(';');
-        for (const c of ca) {
-            const trimmed = c.trim();
-            if (trimmed.startsWith(nameEQ)) {
-                return decodeURIComponent(trimmed.substring(nameEQ.length));
-            }
+const storage = {
+    set(key, value) {
+        try {
+            localStorage.setItem(`flow_${key}`, JSON.stringify(value));
+        } catch (e) {
+            console.error('localStorage set error:', e);
         }
-        return null;
     },
     
-    delete(name) {
-        this.set(name, '', -1);
+    get(key) {
+        try {
+            const item = localStorage.getItem(`flow_${key}`);
+            return item ? JSON.parse(item) : null;
+        } catch (e) {
+            console.error('localStorage get error:', e);
+            return null;
+        }
+    },
+    
+    delete(key) {
+        try {
+            localStorage.removeItem(`flow_${key}`);
+        } catch (e) {
+            console.error('localStorage delete error:', e);
+        }
+    }
+};
+
+// ============================================
+// NOTIFICATIONS API
+// ============================================
+const notifications = {
+    async requestPermission() {
+        if (!('Notification' in window)) return false;
+        if (Notification.permission === 'granted') return true;
+        if (Notification.permission === 'denied') return false;
+        
+        const permission = await Notification.requestPermission();
+        return permission === 'granted';
+    },
+    
+    send(title, options = {}) {
+        if (!('Notification' in window)) return;
+        if (Notification.permission !== 'granted') return;
+        
+        try {
+            new Notification(title, {
+                icon: '/flow/public/icon-192.png',
+                badge: '/flow/public/icon-192.png',
+                requireInteraction: true,
+                ...options
+            });
+        } catch (e) {
+            console.error('Notification error:', e);
+        }
+    },
+    
+    timerComplete(mode) {
+        const messages = {
+            work: { title: '🎉 Work session complete!', body: 'Time to take a break.' },
+            shortBreak: { title: '☕ Short break over', body: 'Ready to focus again?' },
+            longBreak: { title: '🌟 Long break over', body: 'Ready to start a new cycle?' }
+        };
+        
+        const msg = messages[mode] || messages.work;
+        this.send(msg.title, { body: msg.body });
     }
 };
 
@@ -124,60 +213,73 @@ const cookies = {
 // ============================================
 const audio = {
     getContext() {
-        if (!state.audioCtx) {
-            state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try {
+            if (!state.audioCtx) {
+                state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // Resume if suspended (browser autoplay policy)
+            if (state.audioCtx.state === 'suspended') {
+                state.audioCtx.resume().catch(err => {
+                    console.log('AudioContext resume failed:', err);
+                });
+            }
+            return state.audioCtx;
+        } catch (err) {
+            console.error('AudioContext creation failed:', err);
+            return null;
         }
-        // Resume if suspended (browser autoplay policy)
-        if (state.audioCtx.state === 'suspended') {
-            state.audioCtx.resume();
-        }
-        return state.audioCtx;
     },
     
     play(soundType = 'default') {
         if (!state.soundEnabled) return;
         
-        const ctx = this.getContext();
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        
-        switch (soundType) {
-            case 'workEnd':
-                // Triumphant ascending major chord (C5-E5-G5)
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(523.25, ctx.currentTime);
-                oscillator.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
-                oscillator.frequency.setValueAtTime(783.99, ctx.currentTime + 0.3);
-                gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-                oscillator.start(ctx.currentTime);
-                oscillator.stop(ctx.currentTime + 0.8);
-                break;
-                
-            case 'breakEnd':
-                // Gentle descending pattern (G5-E5-C5)
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(783.99, ctx.currentTime);
-                oscillator.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
-                oscillator.frequency.setValueAtTime(523.25, ctx.currentTime + 0.3);
-                gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-                oscillator.start(ctx.currentTime);
-                oscillator.stop(ctx.currentTime + 0.8);
-                break;
-                
-            default:
-                // Pleasant chime
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(523.25, ctx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1);
-                gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-                oscillator.start(ctx.currentTime);
-                oscillator.stop(ctx.currentTime + 0.5);
+        try {
+            const ctx = this.getContext();
+            if (!ctx) return;
+            
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            switch (soundType) {
+                case 'workEnd':
+                    // Triumphant ascending major chord (C5-E5-G5)
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    oscillator.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
+                    oscillator.frequency.setValueAtTime(783.99, ctx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.8);
+                    break;
+                    
+                case 'breakEnd':
+                    // Gentle descending pattern (G5-E5-C5)
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(783.99, ctx.currentTime);
+                    oscillator.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
+                    oscillator.frequency.setValueAtTime(523.25, ctx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.8);
+                    break;
+                    
+                default:
+                    // Pleasant chime
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.5);
+            }
+        } catch (err) {
+            console.error('Audio play error:', err);
         }
     }
 };
@@ -232,7 +334,30 @@ const fullscreen = {
 };
 
 // ============================================
-// TIMER LOGIC
+// THEME MANAGER
+// ============================================
+const themeManager = {
+    apply(theme) {
+        document.body.setAttribute('data-theme', theme);
+        state.theme = theme;
+        if (elements.themeLabel) {
+            elements.themeLabel.textContent = theme === 'dark' ? 'Dark' : 'Light';
+        }
+    },
+    
+    toggle() {
+        const newTheme = state.theme === 'dark' ? 'light' : 'dark';
+        this.apply(newTheme);
+        persistence.saveSettings();
+    },
+    
+    init() {
+        this.apply(state.theme);
+    }
+};
+
+// ============================================
+// TIMER LOGIC (Fixed: Using Date.now() for accuracy)
 // ============================================
 const timer = {
     getTotalTime() {
@@ -245,18 +370,30 @@ const timer = {
     },
     
     tick() {
+        if (!state.startTime) return;
+        
+        // Use Date.now() for accurate timing, even in background tabs
+        const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+        state.timeLeft = Math.max(0, state.remainingAtStart - elapsed);
+        
         if (state.timeLeft <= 0) {
             this.onComplete();
-        } else {
-            state.timeLeft--;
         }
         ui.update();
         persistence.saveState();
     },
     
     onComplete() {
+        const previousMode = state.mode;
         const soundType = state.mode === 'work' ? 'workEnd' : 'breakEnd';
+        
+        // Record session completion for stats
+        if (previousMode === 'work') {
+            stats.recordSession(state.customWorkMinutes);
+        }
+        
         audio.play(soundType);
+        notifications.timerComplete(previousMode);
         
         if (state.mode === 'work') {
             state.workSessionsCompleted++;
@@ -267,10 +404,17 @@ const timer = {
                 state.mode = 'shortBreak';
                 state.timeLeft = state.customShortBreakMinutes * 60;
             }
+            // Auto-start break if enabled
+            if (state.autoStartBreak) {
+                this.start();
+                return;
+            }
         } else {
             state.mode = 'work';
             state.timeLeft = state.customWorkMinutes * 60;
         }
+        
+        this.pause();
     },
     
     toggle() {
@@ -284,13 +428,18 @@ const timer = {
     
     start() {
         state.isRunning = true;
+        state.startTime = Date.now();
+        state.remainingAtStart = state.timeLeft;
         persistence.saveState();
         wakeLockManager.request();
-        state.timerInterval = setInterval(() => this.tick(), 1000);
+        
+        // Use shorter interval for better accuracy with Date.now() comparison
+        state.timerInterval = setInterval(() => this.tick(), CONFIG.TIMER_TICK_INTERVAL);
     },
     
     pause() {
         state.isRunning = false;
+        state.startTime = null;
         clearInterval(state.timerInterval);
         state.timerInterval = null;
         persistence.saveState();
@@ -319,10 +468,66 @@ const timer = {
     
     resumeFromLoadedState() {
         if (state.isRunning) {
+            // Recalculate based on elapsed time since save
             wakeLockManager.request();
-            state.timerInterval = setInterval(() => this.tick(), 1000);
-            persistence.saveState(); // Update timestamp
+            state.timerInterval = setInterval(() => this.tick(), CONFIG.TIMER_TICK_INTERVAL);
+            persistence.saveState();
         }
+    },
+    
+    // Clear interval when page is hidden (prevents memory leak)
+    handleVisibilityChange() {
+        if (document.hidden && state.timerInterval) {
+            // Interval keeps running but tick() will use Date.now() for accuracy
+            // This prevents unnecessary CPU usage in background
+        }
+    }
+};
+
+// ============================================
+// STATS TRACKING
+// ============================================
+const stats = {
+    recordSession(minutes) {
+        const today = utils.getTodayKey();
+        const data = storage.get('stats') || {};
+        
+        if (!data[today]) {
+            data[today] = { sessions: 0, focusMinutes: 0 };
+        }
+        
+        data[today].sessions++;
+        data[today].focusMinutes += minutes;
+        
+        // Keep only last 30 days
+        const keys = Object.keys(data).sort();
+        if (keys.length > 30) {
+            delete data[keys[0]];
+        }
+        
+        storage.set('stats', data);
+        this.updateUI();
+    },
+    
+    getTodayStats() {
+        const today = utils.getTodayKey();
+        const data = storage.get('stats') || {};
+        return data[today] || { sessions: 0, focusMinutes: 0 };
+    },
+    
+    updateUI() {
+        const todayStats = this.getTodayStats();
+        if (elements.todaySessions) {
+            elements.todaySessions.textContent = todayStats.sessions;
+        }
+        if (elements.todayFocusTime) {
+            elements.todayFocusTime.textContent = utils.formatDuration(todayStats.focusMinutes);
+        }
+    },
+    
+    clear() {
+        storage.delete('stats');
+        this.updateUI();
     }
 };
 
@@ -338,7 +543,9 @@ const ui = {
         
         // Update timer display
         elements.timerTime.textContent = utils.formatTime(state.timeLeft);
-        elements.progressCircle.style.strokeDashoffset = offset;
+        if (elements.progressCircle) {
+            elements.progressCircle.style.strokeDashoffset = offset;
+        }
         
         // Update status text
         if (state.isRunning) {
@@ -355,8 +562,15 @@ const ui = {
         this.updateBadge();
         
         // Update play/pause icons
-        elements.iconPlay.style.display = state.isRunning ? 'none' : 'block';
-        elements.iconPause.style.display = state.isRunning ? 'block' : 'none';
+        if (elements.iconPlay) {
+            elements.iconPlay.style.display = state.isRunning ? 'none' : 'block';
+        }
+        if (elements.iconPause) {
+            elements.iconPause.style.display = state.isRunning ? 'block' : 'none';
+        }
+        
+        // Update page title
+        document.title = `${utils.formatTime(state.timeLeft)} - ${state.mode === 'work' ? 'Focus' : 'Break'}`;
     },
     
     updateBadge() {
@@ -366,16 +580,18 @@ const ui = {
             longBreak: 'mode-long-break'
         }[state.mode];
         
-        elements.badge.className = badgeClass;
-        
-        if (state.mode === 'work') {
-            elements.badge.textContent = state.isRunning 
-                ? `Deep Work ${state.workSessionsCompleted % CONFIG.SESSIONS_BEFORE_LONG_BREAK + 1}/${CONFIG.SESSIONS_BEFORE_LONG_BREAK}`
-                : 'Deep Work';
-        } else if (state.mode === 'shortBreak') {
-            elements.badge.textContent = 'Short Rest';
-        } else {
-            elements.badge.textContent = 'Long Rest';
+        if (elements.badge) {
+            elements.badge.className = badgeClass;
+            
+            if (state.mode === 'work') {
+                elements.badge.textContent = state.isRunning 
+                    ? `Deep Work ${state.workSessionsCompleted % CONFIG.SESSIONS_BEFORE_LONG_BREAK + 1}/${CONFIG.SESSIONS_BEFORE_LONG_BREAK}`
+                    : 'Deep Work';
+            } else if (state.mode === 'shortBreak') {
+                elements.badge.textContent = 'Short Rest';
+            } else {
+                elements.badge.textContent = 'Long Rest';
+            }
         }
     },
     
@@ -383,12 +599,23 @@ const ui = {
         const now = new Date();
         const h = String(now.getHours()).padStart(2, '0');
         const m = String(now.getMinutes()).padStart(2, '0');
-        elements.clock.textContent = `${h}:${m}`;
+        if (elements.clock) {
+            elements.clock.textContent = `${h}:${m}`;
+        }
     },
     
     initClock() {
         this.updateClock();
-        setInterval(() => this.updateClock(), 1000);
+        // Store interval reference for cleanup
+        state.clockInterval = setInterval(() => this.updateClock(), 1000);
+    },
+    
+    // Clear clock interval on page hide
+    clearClockInterval() {
+        if (state.clockInterval) {
+            clearInterval(state.clockInterval);
+            state.clockInterval = null;
+        }
     }
 };
 
@@ -397,28 +624,54 @@ const ui = {
 // ============================================
 const settings = {
     open() {
-        elements.workMinutesInput.value = state.customWorkMinutes;
-        elements.shortBreakMinutesInput.value = state.customShortBreakMinutes;
-        elements.longBreakMinutesInput.value = state.customLongBreakMinutes;
+        if (elements.workMinutesInput) {
+            elements.workMinutesInput.value = state.customWorkMinutes;
+        }
+        if (elements.shortBreakMinutesInput) {
+            elements.shortBreakMinutesInput.value = state.customShortBreakMinutes;
+        }
+        if (elements.longBreakMinutesInput) {
+            elements.longBreakMinutesInput.value = state.customLongBreakMinutes;
+        }
         
-        this.updateToggleUI(elements.cookieToggle, state.cookiesEnabled);
-        this.updateToggleUI(elements.soundToggle, state.soundEnabled);
+        if (elements.soundToggle) {
+            this.updateToggleUI(elements.soundToggle, state.soundEnabled);
+        }
+        if (elements.autoStartBreakToggle) {
+            this.updateToggleUI(elements.autoStartBreakToggle, state.autoStartBreak);
+        }
+        if (elements.themeToggle) {
+            this.updateToggleUI(elements.themeToggle, state.theme === 'dark');
+        }
         
-        elements.settingsModal.classList.add('active');
+        if (elements.settingsModal) {
+            elements.settingsModal.classList.add('active');
+        }
+        
+        // Update stats display
+        stats.updateUI();
+        
+        // Request notification permission
+        notifications.requestPermission();
     },
     
     close() {
         this.save();
-        elements.settingsModal.classList.remove('active');
+        if (elements.settingsModal) {
+            elements.settingsModal.classList.remove('active');
+        }
     },
     
     updateToggleUI(container, isActive) {
         const toggle = container.querySelector('.toggle-switch');
-        toggle.classList.toggle('active', isActive);
+        if (toggle) {
+            toggle.classList.toggle('active', isActive);
+        }
     },
     
     getToggleState(container) {
-        return container.querySelector('.toggle-switch').classList.contains('active');
+        const toggle = container.querySelector('.toggle-switch');
+        return toggle ? toggle.classList.contains('active') : false;
     },
     
     save() {
@@ -426,16 +679,27 @@ const settings = {
         const oldShortBreakMinutes = state.customShortBreakMinutes;
         const oldLongBreakMinutes = state.customLongBreakMinutes;
         
-        state.customWorkMinutes = parseInt(elements.workMinutesInput.value) || 25;
-        state.customShortBreakMinutes = parseInt(elements.shortBreakMinutesInput.value) || 5;
-        state.customLongBreakMinutes = parseInt(elements.longBreakMinutesInput.value) || 15;
-        state.cookiesEnabled = this.getToggleState(elements.cookieToggle);
-        state.soundEnabled = this.getToggleState(elements.soundToggle);
-        
-        // Save to cookie
-        if (state.cookiesEnabled) {
-            persistence.saveSettings();
+        // Validate inputs before saving
+        if (elements.workMinutesInput) {
+            state.customWorkMinutes = utils.validateMinutes(elements.workMinutesInput.value, 1, 120);
         }
+        if (elements.shortBreakMinutesInput) {
+            state.customShortBreakMinutes = utils.validateMinutes(elements.shortBreakMinutesInput.value, 1, 60);
+        }
+        if (elements.longBreakMinutesInput) {
+            state.customLongBreakMinutes = utils.validateMinutes(elements.longBreakMinutesInput.value, 1, 120);
+        }
+        
+        state.soundEnabled = elements.soundToggle ? this.getToggleState(elements.soundToggle) : state.soundEnabled;
+        state.autoStartBreak = elements.autoStartBreakToggle ? this.getToggleState(elements.autoStartBreakToggle) : state.autoStartBreak;
+        
+        const newTheme = elements.themeToggle && this.getToggleState(elements.themeToggle) ? 'dark' : 'light';
+        if (newTheme !== state.theme) {
+            themeManager.apply(newTheme);
+        }
+        
+        // Save to localStorage
+        persistence.saveSettings();
         
         // Update timer if paused AND current mode's duration changed
         if (!state.isRunning) {
@@ -468,15 +732,18 @@ const settings = {
             customWorkMinutes: CONFIG.DEFAULTS.workMinutes,
             customShortBreakMinutes: CONFIG.DEFAULTS.shortBreakMinutes,
             customLongBreakMinutes: CONFIG.DEFAULTS.longBreakMinutes,
-            cookiesEnabled: CONFIG.DEFAULTS.cookiesEnabled,
             soundEnabled: CONFIG.DEFAULTS.soundEnabled,
+            autoStartBreak: CONFIG.DEFAULTS.autoStartBreak,
+            theme: CONFIG.DEFAULTS.theme,
             mode: 'work',
             timeLeft: CONFIG.DEFAULTS.workMinutes * 60,
             isRunning: false,
-            workSessionsCompleted: 0
+            workSessionsCompleted: 0,
+            startTime: null,
+            remainingAtStart: 0
         });
         
-        // Clear cookies
+        // Clear storage
         persistence.clearAll();
         
         // Clear timer
@@ -485,49 +752,119 @@ const settings = {
         wakeLockManager.release();
         
         // Update UI
-        elements.workMinutesInput.value = state.customWorkMinutes;
-        elements.shortBreakMinutesInput.value = state.customShortBreakMinutes;
-        elements.longBreakMinutesInput.value = state.customLongBreakMinutes;
-        this.updateToggleUI(elements.cookieToggle, true);
-        this.updateToggleUI(elements.soundToggle, true);
+        if (elements.workMinutesInput) {
+            elements.workMinutesInput.value = state.customWorkMinutes;
+        }
+        if (elements.shortBreakMinutesInput) {
+            elements.shortBreakMinutesInput.value = state.customShortBreakMinutes;
+        }
+        if (elements.longBreakMinutesInput) {
+            elements.longBreakMinutesInput.value = state.customLongBreakMinutes;
+        }
+        if (elements.soundToggle) {
+            this.updateToggleUI(elements.soundToggle, true);
+        }
+        if (elements.autoStartBreakToggle) {
+            this.updateToggleUI(elements.autoStartBreakToggle, false);
+        }
+        if (elements.themeToggle) {
+            this.updateToggleUI(elements.themeToggle, true);
+        }
+        
+        themeManager.apply(state.theme);
         ui.update();
+        stats.clear();
         
         alert('Settings reset to defaults!');
     },
     
-    toggleCookie() {
-        const toggle = elements.cookieToggle.querySelector('.toggle-switch');
-        toggle.classList.toggle('active');
-        this.save();
+    toggleSound() {
+        const toggle = elements.soundToggle?.querySelector('.toggle-switch');
+        if (toggle) {
+            toggle.classList.toggle('active');
+            this.save();
+        }
     },
     
-    toggleSound() {
-        const toggle = elements.soundToggle.querySelector('.toggle-switch');
-        toggle.classList.toggle('active');
-        this.save();
+    toggleAutoStartBreak() {
+        const toggle = elements.autoStartBreakToggle?.querySelector('.toggle-switch');
+        if (toggle) {
+            toggle.classList.toggle('active');
+            this.save();
+        }
+    },
+    
+    toggleTheme() {
+        const toggle = elements.themeToggle?.querySelector('.toggle-switch');
+        if (toggle) {
+            toggle.classList.toggle('active');
+            themeManager.apply(toggle.classList.contains('active') ? 'dark' : 'light');
+            this.save();
+        }
     },
     
     init() {
-        elements.settingsBtn.addEventListener('click', () => this.open());
-        elements.settingsClose.addEventListener('click', () => this.close());
-        elements.settingsReset.addEventListener('click', () => this.reset());
+        if (elements.settingsBtn) {
+            elements.settingsBtn.addEventListener('click', () => this.open());
+        }
+        if (elements.settingsClose) {
+            elements.settingsClose.addEventListener('click', () => this.close());
+        }
+        if (elements.settingsReset) {
+            elements.settingsReset.addEventListener('click', () => this.reset());
+        }
         
-        elements.cookieToggle.addEventListener('click', () => this.toggleCookie());
-        elements.soundToggle.addEventListener('click', () => this.toggleSound());
+        if (elements.soundToggle) {
+            elements.soundToggle.addEventListener('click', () => this.toggleSound());
+        }
+        if (elements.autoStartBreakToggle) {
+            elements.autoStartBreakToggle.addEventListener('click', () => this.toggleAutoStartBreak());
+        }
+        if (elements.themeToggle) {
+            elements.themeToggle.addEventListener('click', () => this.toggleTheme());
+        }
         
-        // Auto-save on input change
-        elements.workMinutesInput.addEventListener('change', () => this.save());
-        elements.shortBreakMinutesInput.addEventListener('change', () => this.save());
-        elements.longBreakMinutesInput.addEventListener('change', () => this.save());
+        // Auto-save on input change with validation
+        const validateInput = (input) => {
+            if (input) {
+                const value = parseInt(input.value, 10);
+                if (isNaN(value) || value < 1) {
+                    input.value = 1;
+                } else if (value > 120) {
+                    input.value = 120;
+                }
+            }
+        };
+        
+        if (elements.workMinutesInput) {
+            elements.workMinutesInput.addEventListener('change', () => {
+                validateInput(elements.workMinutesInput);
+                this.save();
+            });
+        }
+        if (elements.shortBreakMinutesInput) {
+            elements.shortBreakMinutesInput.addEventListener('change', () => {
+                validateInput(elements.shortBreakMinutesInput);
+                this.save();
+            });
+        }
+        if (elements.longBreakMinutesInput) {
+            elements.longBreakMinutesInput.addEventListener('change', () => {
+                validateInput(elements.longBreakMinutesInput);
+                this.save();
+            });
+        }
         
         // Close on backdrop click
-        elements.settingsModal.addEventListener('click', (e) => {
-            if (e.target === elements.settingsModal) this.close();
-        });
+        if (elements.settingsModal) {
+            elements.settingsModal.addEventListener('click', (e) => {
+                if (e.target === elements.settingsModal) this.close();
+            });
+        }
         
         // Close on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && elements.settingsModal.classList.contains('active')) {
+            if (e.key === 'Escape' && elements.settingsModal?.classList.contains('active')) {
                 this.close();
             }
         });
@@ -535,7 +872,7 @@ const settings = {
 };
 
 // ============================================
-// PERSISTENCE
+// PERSISTENCE (Migrated to localStorage)
 // ============================================
 const persistence = {
     saveSettings() {
@@ -543,55 +880,55 @@ const persistence = {
             workMinutes: state.customWorkMinutes,
             shortBreakMinutes: state.customShortBreakMinutes,
             longBreakMinutes: state.customLongBreakMinutes,
-            cookiesEnabled: state.cookiesEnabled,
-            soundEnabled: state.soundEnabled
+            soundEnabled: state.soundEnabled,
+            autoStartBreak: state.autoStartBreak,
+            theme: state.theme
         };
-        cookies.set('flowSettings', JSON.stringify(settings), 365);
+        storage.set('settings', settings);
     },
     
     loadSettings() {
-        const saved = cookies.get('flowSettings');
-        if (!saved) return;
+        const settings = storage.get('settings');
+        if (!settings) return;
         
-        try {
-            const settings = JSON.parse(saved);
-            state.customWorkMinutes = settings.workMinutes ?? CONFIG.DEFAULTS.workMinutes;
-            state.customShortBreakMinutes = settings.shortBreakMinutes ?? CONFIG.DEFAULTS.shortBreakMinutes;
-            state.customLongBreakMinutes = settings.longBreakMinutes ?? CONFIG.DEFAULTS.longBreakMinutes;
-            state.cookiesEnabled = settings.cookiesEnabled ?? CONFIG.DEFAULTS.cookiesEnabled;
-            state.soundEnabled = settings.soundEnabled ?? CONFIG.DEFAULTS.soundEnabled;
-        } catch (e) {
-            console.log('Failed to load settings:', e);
-        }
+        state.customWorkMinutes = settings.workMinutes ?? CONFIG.DEFAULTS.workMinutes;
+        state.customShortBreakMinutes = settings.shortBreakMinutes ?? CONFIG.DEFAULTS.shortBreakMinutes;
+        state.customLongBreakMinutes = settings.longBreakMinutes ?? CONFIG.DEFAULTS.longBreakMinutes;
+        state.soundEnabled = settings.soundEnabled ?? CONFIG.DEFAULTS.soundEnabled;
+        state.autoStartBreak = settings.autoStartBreak ?? CONFIG.DEFAULTS.autoStartBreak;
+        state.theme = settings.theme ?? CONFIG.DEFAULTS.theme;
     },
     
     saveState() {
-        if (!state.cookiesEnabled) return;
-        
         const stateData = {
             mode: state.mode,
             timeLeft: state.timeLeft,
             isRunning: state.isRunning,
             workSessionsCompleted: state.workSessionsCompleted,
+            startTime: state.startTime,
+            remainingAtStart: state.remainingAtStart,
             timestamp: Date.now()
         };
-        cookies.set('flowState', JSON.stringify(stateData), 30);
+        storage.set('state', stateData);
     },
     
     loadState() {
-        const saved = cookies.get('flowState');
-        if (!saved) return false;
+        const savedState = storage.get('state');
+        if (!savedState) return false;
         
         try {
-            const savedState = JSON.parse(saved);
             const now = Date.now();
             const elapsed = Math.floor((now - savedState.timestamp) / 1000);
             
             state.mode = savedState.mode || 'work';
             state.workSessionsCompleted = savedState.workSessionsCompleted || 0;
+            state.startTime = savedState.startTime;
+            state.remainingAtStart = savedState.remainingAtStart || 0;
             
-            if (savedState.isRunning) {
-                state.timeLeft = Math.max(0, savedState.timeLeft - elapsed);
+            if (savedState.isRunning && state.startTime) {
+                // Recalculate based on elapsed time
+                const totalElapsed = Math.floor((now - state.startTime) / 1000);
+                state.timeLeft = Math.max(0, state.remainingAtStart - totalElapsed);
                 
                 if (state.timeLeft <= 0) {
                     // Timer expired while away
@@ -609,12 +946,14 @@ const persistence = {
                         state.timeLeft = state.customWorkMinutes * 60;
                     }
                     state.isRunning = false;
+                    state.startTime = null;
                 } else {
                     state.isRunning = true;
                 }
             } else {
-                state.timeLeft = savedState.timeLeft;
+                state.timeLeft = savedState.timeLeft || state.customWorkMinutes * 60;
                 state.isRunning = false;
+                state.startTime = null;
             }
             
             return true;
@@ -625,8 +964,9 @@ const persistence = {
     },
     
     clearAll() {
-        cookies.delete('flowSettings');
-        cookies.delete('flowState');
+        storage.delete('settings');
+        storage.delete('state');
+        storage.delete('stats');
     },
     
     initAutoSave() {
@@ -635,7 +975,7 @@ const persistence = {
         
         // Periodic save while running
         setInterval(() => {
-            if (state.isRunning && state.cookiesEnabled) {
+            if (state.isRunning) {
                 this.saveState();
             }
         }, CONFIG.STATE_SAVE_INTERVAL);
@@ -679,6 +1019,13 @@ const keyboard = {
                 case 'f':
                 case 'F':
                     fullscreen.toggle();
+                    break;
+                    
+                case '?':
+                case '/':
+                    if (e.shiftKey) {
+                        settings.open();
+                    }
                     break;
             }
         });
@@ -733,9 +1080,41 @@ const serviceWorker = {
     init() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('SW registered:', reg.scope))
+                .then(reg => {
+                    console.log('SW registered:', reg.scope);
+                    // Check for updates
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('New version available');
+                                // Optionally show update notification
+                            }
+                        });
+                    });
+                })
                 .catch(err => console.log('SW registration failed:', err));
         }
+    }
+};
+
+// ============================================
+// PAGE VISIBILITY HANDLER (Fix memory leak)
+// ============================================
+const visibilityHandler = {
+    init() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Page is hidden - clear clock interval to prevent memory leak
+                ui.clearClockInterval();
+            } else {
+                // Page is visible again - restart clock
+                ui.initClock();
+                ui.updateClock();
+                ui.update(); // Refresh timer display
+            }
+            timer.handleVisibilityChange();
+        });
     }
 };
 
@@ -751,6 +1130,9 @@ function init() {
     // Load saved data
     persistence.loadSettings();
     
+    // Apply theme
+    themeManager.init();
+    
     // Set initial time based on settings
     state.timeLeft = timer.getTotalTime();
     
@@ -763,6 +1145,7 @@ function init() {
     // Initialize UI
     ui.initClock();
     ui.update();
+    stats.updateUI();
     
     // Initialize modules
     settings.init();
@@ -771,11 +1154,23 @@ function init() {
     doubleTapFullscreen.init();
     persistence.initAutoSave();
     serviceWorker.init();
+    visibilityHandler.init();
     
     // Event listeners for controls
-    elements.playBtn.addEventListener('click', () => timer.toggle());
-    elements.resetBtn.addEventListener('click', () => timer.reset());
-    elements.modeBtn.addEventListener('click', () => timer.switchMode());
+    if (elements.playBtn) {
+        elements.playBtn.addEventListener('click', () => timer.toggle());
+    }
+    if (elements.resetBtn) {
+        elements.resetBtn.addEventListener('click', () => timer.reset());
+    }
+    if (elements.modeBtn) {
+        elements.modeBtn.addEventListener('click', () => timer.switchMode());
+    }
+    
+    // Request notification permission on first interaction
+    document.addEventListener('click', () => {
+        notifications.requestPermission();
+    }, { once: true });
     
     // Resume timer if it was running
     timer.resumeFromLoadedState();
