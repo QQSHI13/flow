@@ -412,6 +412,9 @@ const timer = {
         } else {
             state.mode = 'work';
             state.timeLeft = state.customWorkMinutes * 60;
+            // Auto-start work after break
+            this.start();
+            return;
         }
         
         this.pause();
