@@ -173,11 +173,14 @@ html, body {
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s ease-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 #settings-btn:hover {
     background: var(--button-bg);
-    opacity: 0.8;
+    opacity: 0.9;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
 }
 
 #settings-btn:active {
