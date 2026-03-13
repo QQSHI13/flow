@@ -472,6 +472,10 @@ const timer = {
     resumeFromLoadedState() {
         if (state.isRunning) {
             // Recalculate based on elapsed time since save
+            const now = Date.now();
+            const elapsed = Math.floor((now - state.startTime) / 1000);
+            state.timeLeft = Math.max(0, state.remainingAtStart - elapsed);
+            if (state.timeLeft <= 0) { this.onComplete(); return; }
             wakeLockManager.request();
             state.timerInterval = setInterval(() => this.tick(), CONFIG.TIMER_TICK_INTERVAL);
             persistence.saveState();
@@ -867,6 +871,7 @@ const settings = {
         
         // Close on Escape key
         document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             if (e.key === 'Escape' && elements.settingsModal?.classList.contains('active')) {
                 this.close();
             }

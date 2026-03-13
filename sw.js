@@ -5,18 +5,7 @@
 
 const CACHE_NAME = 'flow-v3';
 
-// Detect hard refresh - check for cache-bypass header or reload flag
-function isHardRefresh(request) {
-  // Check for Shift+click or Ctrl+Shift+R via navigation timing
-  if (request.mode === 'navigate' && request.cache === 'no-store') {
-    return true;
-  }
-  // Check for manual cache bypass in headers
-  if (request.headers.get('cache-control') === 'no-cache') {
-    return true;
-  }
-  return false;
-}
+// Hard refresh detection removed - simplified caching strategy
 const STATIC_ASSETS = [
   '/flow/',
   '/flow/index.html',
