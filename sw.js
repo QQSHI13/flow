@@ -11,9 +11,7 @@ const STATIC_ASSETS = [
   '/flow/index.html',
   '/flow/time.html',
   '/flow/styles.css',
-  '/flow/app.js',
-  '/flow/public/icon-192.png',
-  '/flow/public/icon-512.png'
+  '/flow/app.js'
 ];
 
 // Install: Cache static assets
@@ -103,6 +101,13 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Check if request is a hard refresh (cache-bypass)
+function isHardRefresh(request) {
+  // Check for cache-control: no-cache header (sent on hard refresh)
+  return request.cache === 'no-cache' || 
+         request.headers.get('cache-control') === 'no-cache';
+}
 
 // Handle messages from clients
 self.addEventListener('message', (event) => {

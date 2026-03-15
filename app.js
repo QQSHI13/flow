@@ -186,8 +186,8 @@ const notifications = {
         
         try {
             new Notification(title, {
-                icon: '/flow/public/icon-192.png',
-                badge: '/flow/public/icon-192.png',
+                icon: 'public/icon-192.png',
+                badge: 'public/icon-192.png',
                 requireInteraction: true,
                 ...options
             });
@@ -495,6 +495,12 @@ const timer = {
 // STATS TRACKING
 // ============================================
 const stats = {
+    // Calculate data size using Blob for accurate byte count
+    getDataSize(data) {
+        const jsonString = JSON.stringify(data);
+        return new Blob([jsonString]).size;
+    },
+    
     recordSession(minutes) {
         const today = utils.getTodayKey();
         const data = storage.get('stats') || {};
@@ -1030,6 +1036,9 @@ const keyboard = {
                     break;
                     
                 case '?':
+                    settings.open();
+                    break;
+                    
                 case '/':
                     if (e.shiftKey) {
                         settings.open();
