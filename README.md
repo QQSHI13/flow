@@ -1,105 +1,85 @@
-# Time & Flow ⏱️
+# Flow ⏱️
 
-A clean, minimalist Pomodoro timer built with vanilla JavaScript. No frameworks, no dependencies—just pure focus.
+A beautiful, customizable Pomodoro timer that helps you stay focused and productive.
 
-**Live Demo**: https://qqshi13.github.io/flow/
-
----
+![Flow Screenshot](screenshot.png)
 
 ## ✨ Features
 
-### Core Timer
-- **🍅 Pomodoro Cycles** — 25min work → 5min short break → 15min long break (every 4 sessions)
-- **⏯️ Play/Pause** — One-click timer control
-- **🔄 Auto-transition** — Automatically moves between work and break sessions
-- **🔔 Audio Notifications** — Pleasant chimes when timers complete
+- **🎯 Pomodoro Technique** — Work in focused 25-minute intervals with short and long breaks
+- **⌨️ Keyboard Shortcuts** — Control the timer without leaving your keyboard
+- **📱 PWA Support** — Install as an app on desktop and mobile
+- **🎨 Customizable** — Adjust work/break durations to match your workflow
+- **📊 Statistics** — Track your productivity over time
+- **🔔 Notifications** — Audio and visual alerts when timer completes
+- **💾 Persistent State** — Timer survives page refreshes
 
-### Customization
-- **⚙️ Adjustable Durations** — Customize work, short break, and long break times
-- **💾 Persistent State** — Timer state saved to cookies (optional)
-- **🌙 Dark Theme** — Easy on the eyes for long work sessions
+## 🚀 Quick Start
 
-### Productivity Features
-- **🔒 Wake Lock** — Prevents screen from sleeping during timer
-- **🖥️ Fullscreen Mode** — Press `F` or double-tap (mobile) for distraction-free mode
-- **📊 Session Counter** — Track completed Pomodoro sessions
+### Try it now
+**Live Demo:** https://qqshi13.github.io/flow/
 
-### Keyboard Shortcuts
-| Key | Action |
-|-----|--------|
-| `Space` | Play/Pause |
-| `F` | Toggle Fullscreen |
-| `R` | Reset Timer |
-| `S` | Open Settings |
-
----
-
-## 🚀 Usage
-
-1. Open [Time & Flow](https://qqshi13.github.io/flow/) in your browser
-2. Click the play button to start your first work session
-3. Focus for 25 minutes, then take a break when the timer chimes
-4. Repeat!
-
----
-
-## 🛠️ Technologies
-
-- **Frontend**: Vanilla HTML5
-- **Styling**: CSS3 with CSS Variables
-- **Logic**: Vanilla JavaScript (ES6+)
-- **Features**: 
-  - Wake Lock API for screen prevention
-  - Fullscreen API
-  - CSS Animations for smooth transitions
-  - Cookie storage for preferences
-  - PWA support (installable)
-
----
-
-## 📦 Installation (Self-Host)
-
+### Run locally
 ```bash
 # Clone the repository
 git clone https://github.com/QQSHI13/flow.git
-
-# Open in browser
 cd flow
+
 # Open index.html in your browser
+# Or use a local server:
+python -m http.server 8000
 ```
 
-No build step required—it's pure HTML/CSS/JS!
+## 🛠️ Tech Stack
 
----
+- **Frontend:** HTML5, CSS3, Vanilla JavaScript
+- **Storage:** localStorage for settings and statistics
+- **PWA:** Service Worker for offline support
+- **Audio:** Web Audio API for notification sounds
 
-## 🖼️ Screenshots
+## 📖 How to Use
 
-*Clean timer interface with circular progress ring*
+1. **Start a session** — Click the play button or press `Space`
+2. **Work for 25 minutes** — Stay focused on your task
+3. **Take a break** — When the timer ends, take a 5-minute short break
+4. **Long break** — After 4 pomodoros, take a 15-minute break
+5. **Track progress** — View your completed sessions in the stats panel
 
----
+### Keyboard Shortcuts
 
-## 📋 Roadmap
+| Key | Action |
+|-----|--------|
+| `Space` | Start/Pause timer |
+| `R` | Reset timer |
+| `S` | Skip to next mode |
+| `F` | Toggle fullscreen |
 
-- [ ] Task list integration
-- [ ] Statistics dashboard
-- [ ] Export session data
-- [ ] Background sounds (rain, white noise)
-- [ ] Mobile app (Capacitor)
+## 📝 Why I Built This
 
----
+I was frustrated with existing Pomodoro apps that were either too cluttered or too simple. I wanted something clean, customizable, and that worked offline. Flow is my solution — a timer that gets out of your way and lets you focus on what matters.
 
-## 📝 License
+## 🐛 Known Issues
 
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+- Notifications may not work in some mobile browsers
+- Audio requires user interaction first (browser security policy)
 
-See [LICENSE](./LICENSE) for details.
+## 🔮 Future Plans
 
----
+- [ ] Task tracking and todo integration
+- [ ] Export statistics to CSV
+- [ ] Dark/light theme toggle
+- [ ] Multi-language support
+
+## 📄 License
+
+This project is licensed under the [GPL-3.0 License](LICENSE).
 
 ## 🙏 Credits
 
-Built with ❤️ by **QQ** and **Nova** ☄️
+Built with ❤️ by [QQ](https://github.com/QQSHI13) & [Nova ☄️](https://openclaw.ai)
 
 Powered by [OpenClaw](https://openclaw.ai)
 
-Inspired by the Pomodoro Technique® by Francesco Cirillo.
+---
+
+**⭐ Star this repo if you find it useful!**
