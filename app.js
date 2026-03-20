@@ -186,8 +186,8 @@ const notifications = {
         
         try {
             new Notification(title, {
-                icon: 'public/icon-192.png',
-                badge: 'public/icon-192.png',
+                icon: 'icon-192.png',
+                badge: 'icon-192.png',
                 requireInteraction: true,
                 ...options
             });
