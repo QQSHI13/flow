@@ -436,7 +436,8 @@ const timer = {
         persistence.saveState();
         wakeLockManager.request();
         
-        // Use shorter interval for better accuracy with Date.now() comparison
+        // Clear any existing interval before starting a new one
+        clearInterval(state.timerInterval);
         state.timerInterval = setInterval(() => this.tick(), CONFIG.TIMER_TICK_INTERVAL);
     },
     
