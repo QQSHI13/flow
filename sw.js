@@ -3,15 +3,18 @@
  * Caches core assets for offline use
  */
 
-const CACHE_NAME = 'flow-v3';
+const CACHE_NAME = 'flow-v4';
 
-// Hard refresh detection removed - simplified caching strategy
 const STATIC_ASSETS = [
   '/flow/',
   '/flow/index.html',
   '/flow/time.html',
+  '/flow/offline.html',
   '/flow/styles.css',
-  '/flow/app.js'
+  '/flow/app.js',
+  '/flow/manifest.json',
+  '/flow/icon-192.png',
+  '/flow/icon-512.png'
 ];
 
 // Install: Cache static assets
@@ -50,14 +53,14 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: Stale-while-revalidate strategy with hard refresh support
+// Fetch: Stale-while-revalidate with offline fallback
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-  
+
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) return;
-  
+
   // Hard refresh: bypass cache entirely
   if (isHardRefresh(event.request)) {
     console.log('Hard refresh detected - bypassing cache');
@@ -71,11 +74,11 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      })
+      }).catch(() => caches.match(event.request))
     );
     return;
   }
-  
+
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
       // Return cached version immediately (stale-while-revalidate)
@@ -90,12 +93,13 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(err => {
-          console.log('Fetch failed, serving from cache:', err);
-          // Return cached response if network fails
-          return cachedResponse;
+        .catch(() => {
+          // Network failed - serve offline fallback for navigation requests
+          if (event.request.mode === 'navigate') {
+            return caches.match('/flow/offline.html');
+          }
         });
-      
+
       // Return cached version or wait for network
       return cachedResponse || fetchPromise;
     })
@@ -104,8 +108,7 @@ self.addEventListener('fetch', (event) => {
 
 // Check if request is a hard refresh (cache-bypass)
 function isHardRefresh(request) {
-  // Check for cache-control: no-cache header (sent on hard refresh)
-  return request.cache === 'no-cache' || 
+  return request.cache === 'no-cache' ||
          request.headers.get('cache-control') === 'no-cache';
 }
 
@@ -116,9 +119,7 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
   if (event.data === 'checkUpdate') {
-    // Trigger an update check
     console.log('Checking for updates...');
     self.registration.update();
   }
 });
-
