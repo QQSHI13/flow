@@ -219,8 +219,8 @@ const audio = {
             }
             // Resume if suspended (browser autoplay policy)
             if (state.audioCtx.state === 'suspended') {
-                state.audioCtx.resume().catch(err => {
-                    console.log('AudioContext resume failed:', err);
+                state.audioCtx.resume().catch(() => {
+                    // Silently ignore AudioContext resume failures
                 });
             }
             return state.audioCtx;
@@ -293,10 +293,10 @@ const wakeLockManager = {
         try {
             state.wakeLock = await navigator.wakeLock.request('screen');
             state.wakeLock.addEventListener('release', () => {
-                console.log('Wake Lock released');
+                // Wake Lock released
             });
         } catch (err) {
-            console.log('Wake Lock failed:', err);
+            // Wake Lock request failed, ignore silently
         }
     },
     
@@ -315,7 +315,7 @@ const fullscreen = {
     toggle() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(() => {
-                console.log('Fullscreen not supported');
+                // Fullscreen not supported, ignore silently
             });
             document.body.classList.add('is-fullscreen');
         } else {
@@ -973,7 +973,7 @@ const persistence = {
             
             return true;
         } catch (e) {
-            console.log('Failed to load state:', e);
+            // Failed to load state, ignore silently
             return false;
         }
     },
@@ -1099,19 +1099,21 @@ const serviceWorker = {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
                 .then(reg => {
-                    console.log('SW registered:', reg.scope);
+                    // Service Worker registered successfully
                     // Check for updates
                     reg.addEventListener('updatefound', () => {
                         const newWorker = reg.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                console.log('New version available');
+                                // New version available
                                 // Optionally show update notification
                             }
                         });
                     });
                 })
-                .catch(err => console.log('SW registration failed:', err));
+                .catch(() => {
+                    // SW registration failed, ignore silently
+                });
         }
     }
 };
