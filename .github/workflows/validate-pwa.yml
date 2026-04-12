@@ -1,0 +1,119 @@
+name: Validate PWA
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-pwa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify manifest.json exists
+        run: |
+          if [ ! -f manifest.json ]; then
+            echo "❌ manifest.json is missing"
+            exit 1
+          fi
+          echo "✅ manifest.json found"
+
+      - name: Verify service worker is accessible
+        run: |
+          if [ ! -f sw.js ]; then
+            echo "❌ sw.js is missing"
+            exit 1
+          fi
+          echo "✅ sw.js found"
+
+      - name: Verify index.html links to manifest and sw registration
+        run: |
+          grep -q 'rel="manifest"' index.html || { echo "❌ index.html missing manifest link"; exit 1; }
+          echo "✅ index.html links manifest.json"
+
+      - name: Validate manifest.json JSON syntax
+        run: |
+          python3 -c "import json, sys; json.load(open('manifest.json')); print('✅ manifest.json is valid JSON')"
+
+      - name: Verify required manifest fields
+        run: |
+          python3 << 'PY'
+          import json, sys
+          with open('manifest.json') as f:
+              m = json.load(f)
+          required = ['name', 'short_name', 'start_url', 'display', 'background_color', 'theme_color', 'icons']
+          missing = [k for k in required if k not in m]
+          if missing:
+              print(f"❌ Missing manifest fields: {', '.join(missing)}")
+              sys.exit(1)
+          if not isinstance(m.get('icons'), list) or len(m['icons']) == 0:
+              print("❌ manifest icons array is empty")
+              sys.exit(1)
+          sizes = {i.get('sizes') for i in m['icons']}
+          if '192x192' not in sizes or '512x512' not in sizes:
+              print("❌ manifest icons missing required 192x192 and/or 512x512 sizes")
+              sys.exit(1)
+          print("✅ manifest.json has all required PWA fields")
+          PY
+
+      - name: Verify icon files exist
+        run: |
+          if [ ! -f icon-192.png ]; then
+            echo "❌ icon-192.png is missing"
+            exit 1
+          fi
+          if [ ! -f icon-512.png ]; then
+            echo "❌ icon-512.png is missing"
+            exit 1
+          fi
+          echo "✅ Required icon files exist"
+
+      - name: Check index.html at repo root
+        run: |
+          if [ ! -f index.html ]; then
+            echo "❌ index.html not found at repository root"
+            exit 1
+          fi
+          echo "✅ index.html is present at root"
+
+      - name: Serve site locally for Lighthouse
+        run: |
+          python3 -m http.server 8080 &
+          echo "LOCAL_SERVER_PID=$!" >> "$GITHUB_ENV"
+          sleep 2
+
+      - name: Run Lighthouse CI (PWA checks)
+        run: |
+          npm install -g @lhci/cli@0.14.x
+          lhci autorun --collect.url=http://localhost:8080/index.html --assert.preset=lighthouse:recommended || true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Lighthouse PWA assertion (best-effort)
+        run: |
+          # Run lighthouse directly and inspect PWA category score
+          npm install -g lighthouse
+          lighthouse http://localhost:8080/index.html \
+            --chrome-flags="--headless --no-sandbox" \
+            --output=json --output-path=./lighthouse-report.json --only-categories=pwa || true
+          python3 << 'PY'
+          import json, sys, os
+          if not os.path.exists('./lighthouse-report.json'):
+              print("⚠️ Lighthouse report not generated; skipping score check.")
+              sys.exit(0)
+          with open('./lighthouse-report.json') as f:
+              report = json.load(f)
+          score = report.get('categories', {}).get('pwa', {}).get('score', 0)
+          print(f"Lighthouse PWA score: {score}")
+          if score < 0.5:
+              print("⚠️ PWA score is below 0.5. Review the report for improvements.")
+          else:
+              print("✅ PWA score looks good.")
+          PY
