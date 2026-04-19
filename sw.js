@@ -1,9 +1,9 @@
 /**
  * Flow Service Worker
- * Caches core assets for offline use
+ * Network-first for HTML, cache-first for assets
  */
 
-const CACHE_NAME = 'flow-v4';
+const CACHE_NAME = 'flow-v5';
 
 const STATIC_ASSETS = [
   '/flow/',
@@ -19,18 +19,10 @@ const STATIC_ASSETS = [
 
 // Install: Cache static assets
 self.addEventListener('install', (event) => {
-  // Force the waiting service worker to become the active service worker
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      })
-      .then(() => {
-        console.log('Service Worker installed, skipping waiting');
-        return self.skipWaiting();
-      })
-      .catch(err => console.error('Cache install error:', err))
+      .then(cache => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -41,50 +33,26 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames
           .filter(name => name !== CACHE_NAME)
-          .map(name => {
-            console.log('Deleting old cache:', name);
-            return caches.delete(name);
-          })
+          .map(name => caches.delete(name))
       );
-    }).then(() => {
-      console.log('Service Worker activated');
-      return self.clients.claim();
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch: Stale-while-revalidate with offline fallback
+// Fetch: Network-first for HTML, cache-first for assets
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-
-  // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) return;
 
-  // Hard refresh: bypass cache entirely
-  if (isHardRefresh(event.request)) {
-    console.log('Hard refresh detected - bypassing cache');
-    event.respondWith(
-      fetch(event.request).then(networkResponse => {
-        // Still update cache for next normal load
-        if (networkResponse && networkResponse.status === 200) {
-          const cacheCopy = networkResponse.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, cacheCopy);
-          });
-        }
-        return networkResponse;
-      }).catch(() => caches.match(event.request))
-    );
-    return;
-  }
+  const isHTML = event.request.mode === 'navigate' || 
+                 event.request.destination === 'document' ||
+                 event.request.url.endsWith('.html');
 
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      // Return cached version immediately (stale-while-revalidate)
-      const fetchPromise = fetch(event.request)
+  if (isHTML) {
+    // Network-first for HTML pages
+    event.respondWith(
+      fetch(event.request)
         .then(networkResponse => {
-          // Update cache with fresh version
           if (networkResponse && networkResponse.status === 200) {
             const cacheCopy = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => {
@@ -94,32 +62,35 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         })
         .catch(() => {
-          // Network failed - serve offline fallback for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match('/flow/offline.html');
-          }
-        });
+          return caches.match(event.request)
+            .then(cached => cached || caches.match('/flow/offline.html'));
+        })
+    );
+  } else {
+    // Cache-first for assets
+    event.respondWith(
+      caches.match(event.request).then(cachedResponse => {
+        const fetchPromise = fetch(event.request)
+          .then(networkResponse => {
+            if (networkResponse && networkResponse.status === 200) {
+              const cacheCopy = networkResponse.clone();
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, cacheCopy);
+              });
+            }
+            return networkResponse;
+          })
+          .catch(() => cachedResponse);
 
-      // Return cached version or wait for network
-      return cachedResponse || fetchPromise;
-    })
-  );
+        return cachedResponse || fetchPromise;
+      })
+    );
+  }
 });
-
-// Check if request is a hard refresh (cache-bypass)
-function isHardRefresh(request) {
-  return request.cache === 'no-cache' ||
-         request.headers.get('cache-control') === 'no-cache';
-}
 
 // Handle messages from clients
 self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') {
-    console.log('skipWaiting message received - activating new worker');
     self.skipWaiting();
-  }
-  if (event.data === 'checkUpdate') {
-    console.log('Checking for updates...');
-    self.registration.update();
   }
 });
