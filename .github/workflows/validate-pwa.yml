@@ -33,10 +33,14 @@ jobs:
           fi
           echo "✅ sw.js found"
 
-      - name: Verify index.html links to manifest and sw registration
+      - name: Verify index.html links manifest and a service worker is registered
         run: |
           grep -q 'rel="manifest"' index.html || { echo "❌ index.html missing manifest link"; exit 1; }
           echo "✅ index.html links manifest.json"
+          # Flow registers its service worker from app.js, not inline in index.html.
+          grep -rqs 'serviceWorker.register' --include='*.html' --include='*.js' . \
+            || { echo "❌ no serviceWorker.register call found"; exit 1; }
+          echo "✅ a service worker is registered"
 
       - name: Validate manifest.json JSON syntax
         run: |
@@ -83,37 +87,23 @@ jobs:
           fi
           echo "✅ index.html is present at root"
 
-      - name: Serve site locally for Lighthouse
+      - name: Verify service worker bumps its cache name
         run: |
-          python3 -m http.server 8080 &
-          echo "LOCAL_SERVER_PID=$!" >> "$GITHUB_ENV"
-          sleep 2
+          grep -qE "CACHE[A-Z_]*\s*=\s*['\"][^'\"]*v[0-9]+['\"]" sw.js \
+            || { echo "::error::sw.js cache name must carry a version suffix (e.g. flow-v6)"; exit 1; }
+          echo "✅ sw.js uses a versioned cache name"
 
-      - name: Run Lighthouse CI (PWA checks)
-        run: |
-          npm install -g @lhci/cli@0.14.x
-          lhci autorun --collect.url=http://localhost:8080/index.html --assert.preset=lighthouse:recommended || true
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.14.x
+
+      # Lighthouse 12 removed the "pwa" category, so PWA conformance is asserted
+      # by the explicit steps above. Lighthouse gates the remaining categories.
+      - name: Run Lighthouse CI
+        run: lhci autorun --config=lighthouserc.json
         env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-
-      - name: Lighthouse PWA assertion (best-effort)
-        run: |
-          # Run lighthouse directly and inspect PWA category score
-          npm install -g lighthouse
-          lighthouse http://localhost:8080/index.html \
-            --chrome-flags="--headless --no-sandbox" \
-            --output=json --output-path=./lighthouse-report.json --only-categories=pwa || true
-          python3 << 'PY'
-          import json, sys, os
-          if not os.path.exists('./lighthouse-report.json'):
-              print("⚠️ Lighthouse report not generated; skipping score check.")
-              sys.exit(0)
-          with open('./lighthouse-report.json') as f:
-              report = json.load(f)
-          score = report.get('categories', {}).get('pwa', {}).get('score', 0)
-          print(f"Lighthouse PWA score: {score}")
-          if score < 0.5:
-              print("⚠️ PWA score is below 0.5. Review the report for improvements.")
-          else:
-              print("✅ PWA score looks good.")
-          PY
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
