@@ -2,8 +2,6 @@
 
 A beautiful, customizable Pomodoro timer that helps you stay focused and productive.
 
-![Flow Screenshot](screenshot.png)
-
 ## ✨ Features
 
 - **🎯 Pomodoro Technique** — Work in focused 25-minute intervals with short and long breaks
