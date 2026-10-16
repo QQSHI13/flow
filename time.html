@@ -15,10 +15,17 @@
             display: inline-block;
             box-sizing: content-box;
             cursor: normal;
-            padding: 5% 10%;
+            margin: 0;                       /* it is an <h1> now */
+            padding: 4% 6%;
             border: 1px solid #69696962;
             border-radius: 50px;
-            font: normal 1500%/normal Arial, Helvetica, sans-serif;
+            /* was `font: normal 1500%/normal` = a fixed 240px font that could not fit a
+               phone; scale with the viewport instead and keep it on one line */
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: normal;
+            font-size: clamp(3rem, 20vw, 15rem);
+            line-height: 1;
+            white-space: nowrap;
             color: rgba(255, 255, 255, 0.9);
             text-indent: 1px;
             text-overflow: clip;
@@ -60,7 +67,7 @@
 </head>
 
 <body id="tim">
-    <div class="blank" id="time"></div>
+    <h1 class="blank" id="time"></h1>
 
     <script>
         // Clock interval reference for cleanup
@@ -103,7 +110,12 @@
                         console.log('SW registered:', registration);
                         
                         // Auto-refresh when a new service worker takes control
+                        // Only auto-reload when an UPDATE replaces a controller this page already had.
+                        // On a first visit the new worker claims an uncontrolled page, and reloading
+                        // there would cost every first-time visitor a second page load.
+                        const swHadController = !!navigator.serviceWorker.controller;
                         navigator.serviceWorker.addEventListener('controllerchange', () => {
+                            if (!swHadController) return;
                             console.log('New service worker activated - reloading page');
                             window.location.reload();
                         });
