@@ -3,7 +3,7 @@
  * Network-first for HTML, cache-first for assets
  */
 
-const CACHE_NAME = 'flow-v5';
+const CACHE_NAME = 'flow-v6';
 
 const STATIC_ASSETS = [
   '/flow/',
@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
   '/flow/time.html',
   '/flow/offline.html',
   '/flow/styles.css',
+  '/flow/theme/theme.css',
   '/flow/app.js',
   '/flow/manifest.json',
   '/flow/icon-192.png',

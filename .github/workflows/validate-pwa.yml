@@ -17,6 +17,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # theme/theme.css is a vendored copy of tools-suite/shared/theme.css and
+      # must hash to theme/theme.sha256 (checked offline, no network needed).
+      - name: Verify the vendored theme matches its pin
+        run: node scripts/sync-theme.mjs --check
+
       - name: Verify manifest.json exists
         run: |
           if [ ! -f manifest.json ]; then

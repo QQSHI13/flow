@@ -16,7 +16,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The vendored copy of tools-suite/shared/theme.css must hash to the value
+  # pinned in theme/theme.sha256; drift fails the workflow instead of shipping.
+  theme:
+    name: Vendored theme matches its pin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Check theme/theme.css against theme/theme.sha256
+        run: node scripts/sync-theme.mjs --check
+
   deploy:
+    needs: theme
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -26,6 +38,16 @@ jobs:
         uses: actions/checkout@v7
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install build tooling
+        run: npm ci || npm install
+      # Re-fetch the canonical theme and verify it against the pin, so the
+      # artifact always ships the pinned copy even if the committed one is stale.
+      - name: Vendor the pinned theme
+        run: npm run theme
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:

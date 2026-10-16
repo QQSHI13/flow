@@ -45,11 +45,10 @@
     --ring-bg: rgba(0, 0, 0, 0.1);
 }
 
-/* Reset & Base */
+/* Reset & Base
+   The margin/padding/box-sizing reset is owned by theme/theme.css (linked
+   before this file); only Flow's own extra is kept here. */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
 
